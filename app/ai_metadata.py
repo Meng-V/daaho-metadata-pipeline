@@ -145,27 +145,64 @@ def apply_review_overrides(md: Dict[str, Any], review: Dict[str, Any]) -> Tuple[
         notes.append(f"Applied review override for '{field}'.")
     return md, notes
 
-def _image_to_data_url(img_bytes: bytes) -> str:
+def _image_to_data_url(img_bytes: bytes, mime: str = "image/png") -> str:
     b64 = base64.b64encode(img_bytes).decode("utf-8")
-    return f"data:image/png;base64,{b64}"
+    return f"data:{mime};base64,{b64}"
 
-def transcribe_with_model(img_bytes: bytes, max_chars: int = MAX_OCR_CHARS, model: str = DEFAULT_MODEL) -> str:
+
+def default_detail(model: str) -> str:
+    """Image fidelity to request.
+
+    'original' preserves input dimensions. Tile-resizing models reduce the shortest side to 768px,
+    which destroys the detail this collection needs for accurate name and date readings -- the
+    reason the pipeline is on GPT-5.6. See docs/DECISIONS.md D-009.
+    """
+    return "original" if model.startswith(("gpt-5.6", "gpt-5.4")) else "high"
+
+
+def _image_part(img_bytes: bytes, mime: str, detail: str) -> Dict[str, Any]:
+    image_url: Dict[str, Any] = {"url": _image_to_data_url(img_bytes, mime)}
+    if detail:
+        image_url["detail"] = detail
+    return {"type": "image_url", "image_url": image_url}
+
+
+def _completion_kwargs(model: str, max_output_tokens: int, reasoning_effort: str = "") -> Dict[str, Any]:
+    """Sampling/limit parameters. GPT-5 models reject temperature/top_p/penalties and use
+    max_completion_tokens rather than max_tokens."""
+    kwargs: Dict[str, Any] = {"max_completion_tokens": max_output_tokens}
+    if reasoning_effort:
+        kwargs["reasoning_effort"] = reasoning_effort
+    return kwargs
+
+
+def transcribe_with_model(
+    img_bytes: bytes,
+    max_chars: int = MAX_OCR_CHARS,
+    model: str = DEFAULT_MODEL,
+    mime: str = "image/png",
+    detail: str = "",
+    reasoning_effort: str = "",
+) -> Tuple[str, Any]:
+    """Vision transcription fallback. Returns (text, usage) so the caller can price the call."""
     client = _get_client()
-    data_url = _image_to_data_url(img_bytes)
+    detail = detail or default_detail(model)
     resp = client.chat.completions.create(
         model=model,
         messages=[{
             "role": "user",
             "content": [
-                {"type": "text", "text": "Transcribe ALL visible text. Preserve line breaks; prefix clearly handwritten lines with '[handwritten] '. Use '[illegible]'/'[unclear]' for unreadable parts. Return PLAIN TEXT only."},
-                {"type": "image_url", "image_url": {"url": data_url}},
+                {"type": "text", "text": "Transcribe ALL visible text. Preserve line breaks; prefix clearly handwritten lines with '[handwritten] '. Use '[illegible]'/'[unclear]' for unreadable parts. Do not guess at unreadable words. Return PLAIN TEXT only."},
+                _image_part(img_bytes, mime, detail),
             ],
         }],
-        temperature=0,
-        max_tokens=900,
+        # 900 was the old cap and is far too low for a reasoning model: on the pilot run 82% of
+        # this call's output tokens were reasoning, and several items spent all 900 on reasoning
+        # and returned an EMPTY transcript while being billed in full.
+        **_completion_kwargs(model, 4000, reasoning_effort),
     )
     text = (resp.choices[0].message.content or "").strip()
-    return text[:max_chars]
+    return text[:max_chars], getattr(resp, "usage", None)
 
 def extract_metadata(
     img_bytes: bytes,
@@ -177,9 +214,15 @@ def extract_metadata(
     known_permalink: str = "",
     prompt_version: str = PROMPT_VERSION,
     summary_style_examples: str = "",
+    mime: str = "image/png",
+    detail: str = "",
+    reasoning_effort: str = "",
+    usage_sink: Optional[List[Any]] = None,
 ) -> Dict[str, Any]:
+    """Extract LOC15 metadata. Appends every attempt's usage payload to usage_sink if given,
+    so failed and retried attempts are still billed accurately."""
     client = _get_client()
-    data_url = _image_to_data_url(img_bytes)
+    detail = detail or default_detail(model)
     ocr_text = (ocr_text or "").strip()[:MAX_OCR_CHARS]
 
     system_prompt, user_prompt_template = _get_prompts(prompt_version)
@@ -193,7 +236,7 @@ def extract_metadata(
     )
     content: List[Dict[str, Any]] = [
         {"type": "text", "text": user_prompt},
-        {"type": "image_url", "image_url": {"url": data_url}},
+        _image_part(img_bytes, mime, detail),
     ]
 
     last_error: Optional[str] = None
@@ -203,10 +246,6 @@ def extract_metadata(
                 model=model,
                 messages=[{"role": "system", "content": system_prompt},
                           {"role": "user", "content": content}],
-                temperature=0,
-                top_p=1,
-                presence_penalty=0,
-                frequency_penalty=0,
                 response_format={
                     "type": "json_schema",
                     "json_schema": {
@@ -215,8 +254,10 @@ def extract_metadata(
                         "strict": True,
                     },
                 },
-                max_tokens=MAX_OUTPUT_TOKENS,
+                **_completion_kwargs(model, MAX_OUTPUT_TOKENS, reasoning_effort),
             )
+            if usage_sink is not None:
+                usage_sink.append(getattr(resp, "usage", None))
             raw = resp.choices[0].message.content or "{}"
             try:
                 parsed = json.loads(raw)

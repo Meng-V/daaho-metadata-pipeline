@@ -57,6 +57,22 @@ class AAMUBCMetadataModel(BaseModel):
     object_id: Optional[str] = Field(default=None, alias="Object ID")
 
 
+# Fields a reviewer triages on. field_confidence carries one honest 0-100 score per entry so a
+# solo reviewer can sort by confidence instead of re-checking everything (docs/DECISIONS.md D-008).
+FIELD_CONFIDENCE_FIELDS = [
+    "title",
+    "date",
+    "place",
+    "creator",
+    "contributors",
+    "correspondents",
+    "transcript",
+    "description",
+    "subjects",
+    "genre",
+    "language",
+]
+
 # Keep the original LOC15_SCHEMA for backward compatibility
 LOC15_SCHEMA: Dict[str, Any] = {
     "type": "object",
@@ -102,7 +118,19 @@ LOC15_SCHEMA: Dict[str, Any] = {
         "transcript":     {"type": ["string", "null"]},
         "text_reading":   {"type": ["string", "null"]},
         "generated_title":{"type": ["string", "null"], "maxLength": 240},
-        "field_confidence": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "minimum": 0, "maximum": 100}},
+        # Declared with explicit keys, not additionalProperties. OpenAI structured outputs
+        # strict mode requires every object to set additionalProperties:false and list all
+        # properties in "required", so a free-key map cannot be expressed. It previously came
+        # back null on every item, which silently defeated the field's purpose.
+        "field_confidence": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                name: {"type": ["integer", "null"], "minimum": 0, "maximum": 100}
+                for name in FIELD_CONFIDENCE_FIELDS
+            },
+            "required": list(FIELD_CONFIDENCE_FIELDS),
+        },
     },
     "required": [
         "title","creator","contributors","correspondents","publisher","date","place","language",
@@ -115,8 +143,13 @@ LOC15_SCHEMA: Dict[str, Any] = {
 }
 
 MAX_OCR_CHARS = 12000
-MAX_OUTPUT_TOKENS = 4096
-DEFAULT_MODEL = "gpt-4o"
+# Must cover reasoning tokens AND the visible response, because reasoning models bill both against
+# max_completion_tokens. Measured on the 19-image pilot: reasoning consumed 56-100% of the old 4096
+# budget, and BC-0897's first attempt spent all 4096 on reasoning and returned an EMPTY response,
+# forcing a retry. Output is billed per token actually used, so a generous ceiling costs nothing
+# and removes a silent-truncation failure mode that would recur on longer documents.
+MAX_OUTPUT_TOKENS = 12000
+DEFAULT_MODEL = "gpt-5.6-terra"
 SCHEMA_VERSION = "loc15_schema_v2"
 
 # Trust tiers for policy enforcement and labeling (ordered for deterministic output).

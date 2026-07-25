@@ -11,8 +11,16 @@ from .ai_metadata import (
     PROMPT_VERSION,
     apply_review_overrides,
     apply_tier_policy,
+    default_detail,
     extract_metadata,
     transcribe_with_model,
+)
+from .cost import (
+    DEFAULT_TIER,
+    TIERS,
+    CostLedger,
+    free_record,
+    record_from_usage,
 )
 from .derivations import apply_derivations, derive_normalized_title
 from .evidence_qc import run_evidence_qc
@@ -20,7 +28,13 @@ try:
     from .gdrive import pull_files_from_folder
 except ImportError:
     pull_files_from_folder = None
-from .ocr import pil_bytes, tesseract_ocr
+from .ocr import (
+    image_bytes,
+    image_dimensions,
+    sent_dimensions,
+    tesseract_available,
+    tesseract_ocr,
+)
 from .schema import LOC15_SCHEMA, SCHEMA_VERSION
 from .validation_core import validate_core
 
@@ -64,8 +78,10 @@ def _load_controlled_list(path_str: Optional[str]) -> Set[str]:
         return set()
     values: Set[str] = set()
     for line in path.read_text(encoding="utf-8").splitlines():
-        token = line.strip()
-        if not token or token.startswith("#"):
+        # Strip trailing inline comments so vocab files can carry provenance (e.g. AAT ids)
+        # beside each term. No controlled term in use contains '#'.
+        token = line.split("#", 1)[0].strip()
+        if not token:
             continue
         values.add(token)
     return values
@@ -512,6 +528,9 @@ def process_path(
     prompt_version: str = PROMPT_VERSION,
     summary_examples: Optional[Dict[str, Dict[str, str]]] = None,
     summary_fewshot_mode: str = "leave-one-out",
+    ledger: Optional[CostLedger] = None,
+    reasoning_effort: str = "",
+    ocr_fallback: bool = True,
 ) -> None:
     item_path = Path(path)
     if not item_path.exists():
@@ -530,18 +549,38 @@ def process_path(
         examples=summary_examples or {},
         mode=summary_fewshot_mode,
     )
+    detail = default_detail(model)
+    item_cost_start = ledger.total if ledger else 0.0
 
     text, conf = tesseract_ocr(str(item_path))
-    img_bytes = pil_bytes(str(item_path))
-    if len(text.strip()) < 25:
+    if ledger:
+        # Record honestly whether local OCR actually ran. pytesseract being absent silently turns
+        # tesseract_ocr() into a no-op, which is what made the billable fallback fire on every
+        # item in the first full run -- see docs/DECISIONS.md D-009b.
+        if tesseract_available():
+            note = f"local OCR, no API cost ({len(text.strip())} chars)"
+        else:
+            note = "SKIPPED: pytesseract not installed, so local OCR did not run"
+        ledger.add(free_record(item_id, "tesseract", note=note))
+    img_bytes, mime = image_bytes(str(item_path))
+    if ocr_fallback and len(text.strip()) < 25:
         try:
-            model_text = transcribe_with_model(img_bytes, model=model)
+            model_text, ocr_usage = transcribe_with_model(
+                img_bytes, model=model, mime=mime, detail=detail, reasoning_effort=reasoning_effort
+            )
+            if ledger:
+                ledger.add(record_from_usage(
+                    item_id, "ocr_fallback", model, ocr_usage,
+                    prompt_version=prompt_version, detail=detail,
+                    note="Tesseract returned under 25 chars",
+                ))
             if len(model_text) > len(text):
                 text = model_text
                 conf = max(conf, 85.0)
         except Exception:
             pass
 
+    usage_sink: List[Any] = []
     md = extract_metadata(
         img_bytes,
         text,
@@ -552,7 +591,18 @@ def process_path(
         known_permalink=permalink,
         prompt_version=prompt_version,
         summary_style_examples=summary_style_examples,
+        mime=mime,
+        detail=detail,
+        reasoning_effort=reasoning_effort,
+        usage_sink=usage_sink,
     )
+    if ledger:
+        for index, usage in enumerate(usage_sink):
+            ledger.add(record_from_usage(
+                item_id, "extraction", model, usage,
+                prompt_version=prompt_version, detail=detail,
+                note="retry attempt" if index else "",
+            ))
 
     review_notes: List[str] = []
     if apply_reviews:
@@ -582,13 +632,26 @@ def process_path(
     if place_notes:
         policy_notes = policy_notes + place_notes
 
+    width, height = image_dimensions(str(item_path))
+    sent_width, sent_height = sent_dimensions(img_bytes)
     context = {
         "filename": item_path.name,
         "processing_confidence": float(conf),
+        "processing_confidence_valid": tesseract_available(),
         "model": model,
         "prompt_version": prompt_version,
         "schema_version": SCHEMA_VERSION,
+        # source_* is the file on disk; sent_* is what actually reached the model after the
+        # MAX_PIXELS cap (docs/DECISIONS.md D-009a). They differ on large scans.
+        "image": {
+            "source_width": width, "source_height": height,
+            "sent_width": sent_width, "sent_height": sent_height,
+            "downscaled": (sent_width, sent_height) != (width, height),
+            "mime": mime, "detail": detail, "payload_bytes": len(img_bytes),
+        },
     }
+    if ledger:
+        context["cost_usd"] = round(ledger.total - item_cost_start, 6)
     if summary_example_ids:
         context["summary_fewshot"] = {
             "mode": summary_fewshot_mode,
@@ -637,7 +700,10 @@ def process_path(
 
     os.makedirs(out_dir, exist_ok=True)
     output_path.write_text(json.dumps(envelope, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(" Done.")
+    if ledger:
+        print(f" Done. (${ledger.total - item_cost_start:.4f})")
+    else:
+        print(" Done.")
 
 
 def is_supported(name: str) -> bool:
@@ -651,7 +717,32 @@ def main() -> None:
     parser.add_argument("--out", dest="out_dir", default="./out", help="Output directory")
     parser.add_argument("--gdrive", action="store_true", help="Fetch from Google Drive folder first")
     parser.add_argument("--samples", action="store_true", help="Process all .jpg files in SAMPLES/")
-    parser.add_argument("--model", default="gpt-4o", help="OpenAI model (default: gpt-4o)")
+    parser.add_argument(
+        "--tier",
+        choices=sorted(TIERS),
+        default="",
+        help="Cost tier: luna (cheap bulk) | terra (default) | sol (hard items). Sets the model.",
+    )
+    parser.add_argument("--model", default="", help="Explicit model id; overrides --tier")
+    parser.add_argument(
+        "--reasoning-effort",
+        default="",
+        help="Optional reasoning effort for GPT-5 models (low/medium/high). Omit to use the default.",
+    )
+    parser.add_argument(
+        "--cost-ledger",
+        default="",
+        help="Path to the append-only cost ledger JSONL (default: <out-dir>/cost_ledger.jsonl)",
+    )
+    parser.add_argument("--no-cost-ledger", action="store_true", help="Disable cost tracking")
+    parser.add_argument(
+        "--ocr-fallback",
+        action="store_true",
+        help="Enable the billable vision OCR transcription fallback (default: off). It was 37%% of "
+             "the pilot run's cost while returning empty text on several items, because its output "
+             "budget is consumed by reasoning tokens. The extraction call already reads the image "
+             "at detail=original, so this is usually redundant.",
+    )
     parser.add_argument("--prompt-version", default=PROMPT_VERSION, help=f"Prompt version in prompts/ (default: {PROMPT_VERSION})")
     parser.add_argument(
         "--summary-examples-csv",
@@ -701,6 +792,21 @@ def main() -> None:
         help="Rebuild envelopes from existing JSON outputs without re-running OCR/AI",
     )
     args = parser.parse_args()
+
+    # Resolve the model from --model (explicit) or --tier, defaulting to the standard tier.
+    if args.model:
+        model = args.model
+        tier_label = next((t.name for t in TIERS.values() if t.model_id == model), "custom")
+    else:
+        tier = TIERS[args.tier or DEFAULT_TIER]
+        model, tier_label = tier.model_id, tier.name
+    print(f"Model: {model}  (tier: {tier_label}, image detail: {default_detail(model)})")
+
+    ledger: Optional[CostLedger] = None
+    if not args.no_cost_ledger:
+        ledger_path = args.cost_ledger or str(Path(args.out_dir) / "cost_ledger.jsonl")
+        ledger = CostLedger(ledger_path)
+        print(f"Cost ledger: {ledger_path}")
 
     online_vocab_advisory = bool(args.online_vocab_advisory or args.validate_vocab)
     approved_places = _load_controlled_list(args.approved_places)
@@ -792,7 +898,7 @@ def main() -> None:
                 collection=args.collection,
                 repository=args.repository,
                 permalink=args.permalink,
-                model=args.model,
+                model=model,
                 approved_places=approved_places,
                 approved_subjects=approved_subjects,
                 approved_genre=approved_genre,
@@ -804,9 +910,19 @@ def main() -> None:
                 prompt_version=args.prompt_version,
                 summary_examples=summary_examples,
                 summary_fewshot_mode=args.summary_fewshot_mode,
+                ledger=ledger,
+                reasoning_effort=args.reasoning_effort,
+                ocr_fallback=args.ocr_fallback,
             )
         except Exception as exc:
             print(f"x {path}: {exc}")
+
+    if ledger and ledger.records:
+        billable = [r for r in ledger.records if r.tier != "free"]
+        print(f"\nRun cost: ${ledger.total:.4f} over {len(billable)} billable calls "
+              f"({len(paths)} items). Ledger: {ledger.path}")
+        print("Per-item and per-tier breakdown:  python3 scripts/cost_report.py "
+              f"--ledger {ledger.path}")
 
 
 if __name__ == "__main__":
