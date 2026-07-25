@@ -1,0 +1,505 @@
+OLD: final_metadata.csv  (19 rows)
+NEW: out/final_metadata_2026-04-27_handoff.csv  (19 rows)
+
+BC-0688_Recto
+    Title:
+      OLD: Letter from Murray Sheehan to secretary to the p... [80 chars]
+      NEW: Letter to Miss Marshall from Murray Sheehan, 27 ... [60 chars]
+    Correspondents:
+      OLD: Marshall, Miss; Rosser, Aurelia; Sukhsvasti, Pra... [55 chars]
+      NEW: Miss Marshall
+    Date:
+      OLD: \
+      NEW: 1938-10-27
+    Location:
+      OLD: District of Columbia--Washington
+      NEW: District of Columbia--Washington; Ohio--Oxford
+    Subject (FAST):
+      OLD: Siamese Legation; College students; Universities... [77 chars]
+      NEW: Miami University (Oxford, Ohio)
+    Decade:
+      OLD: (empty)
+      NEW: 1930-1939
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1027 -> 947 chars)
+
+BC-0692_Recto
+    Title:
+      OLD: itinerary document for Upham, undated
+      NEW: Upham itinerary document, undated
+    Date:
+      OLD: undated
+      NEW: (empty)
+    Subject (FAST):
+      OLD: Travel; Itineraries; Addresses
+      NEW: correspondence
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+
+BC-0694_Recto
+    Title:
+      OLD: Letter to Mr. Kiyoshi Tomizawa from the Presiden... [61 chars]
+      NEW: Letter to Mr. Kiyoshi Tomizawa from the Presiden... [66 chars]
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: (empty)
+      NEW: Mr. Kiyoshi Tomizawa
+    Location:
+      OLD: California--San Francisco
+      NEW: California--San Francisco; Ohio--Oxford
+    Summary: changed (183 -> 214 chars)
+    Subject (FAST):
+      OLD: Letters; Vacation plans; Travel
+      NEW: Vacations--Planning; World War (1939-1945); corr... [58 chars]
+    Genre:
+      OLD: letters
+      NEW: correspondence
+    Language:
+      OLD: (empty)
+      NEW: English
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1117 -> 1111 chars)
+
+BC-0695_Recto
+    Title:
+      OLD: Letter to the minister from Siam regarding Praso... [72 chars]
+      NEW: Letter to His Excellency, the Minister from Siam... [65 chars]
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: (empty)
+      NEW: His Excellency, the Minister from Siam; Prasob S... [57 chars]
+    Location:
+      OLD: Washington (D.C.)
+      NEW: District of Columbia--Washington
+    Summary: changed (139 -> 209 chars)
+    Subject (FAST):
+      OLD: Student movements; Education; University student... [49 chars]
+      NEW: education; international students
+    Genre:
+      OLD: letters (correspondence)
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+
+BC-0696_Recto
+    Title:
+      OLD: Letter to President William M. Jardine regarding... [72 chars]
+      NEW: Letter to President William M. Jardine, 20 Octob... [55 chars]
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: (empty)
+      NEW: President William M. Jardine
+    Location:
+      OLD: (empty)
+      NEW: Kansas--Wichita
+    Summary: changed (193 -> 240 chars)
+    Subject (FAST):
+      OLD: Presidents; Sabbaticals; Travel
+      NEW: university presidents; Vacations--Planning; corr... [58 chars]
+    Genre:
+      OLD: letters
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1492 -> 1510 chars)
+
+BC-0697_Recto
+    Title:
+      OLD: newspaper clipping of Dr. Upham's trip to Japan,... [53 chars]
+      NEW: Dr. Upham and family planning trip to Japan, 16 ... [61 chars]
+    Creator:
+      OLD: anonymous
+      NEW: (empty)
+    Correspondents:
+      OLD: (empty)
+      NEW: Ralph McGinnis; Miss Jeni Van Ausdal
+    Date:
+      OLD: 1930-11-16
+      NEW: 1937-11-16
+    Publisher:
+      OLD: Journal-News
+      NEW: (empty)
+    Summary: changed (230 -> 251 chars)
+    Subject (FAST):
+      OLD: Voyages and travels; University presidents; Educ... [61 chars]
+      NEW: American students; foreign students; Miami Unive... [68 chars]
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Digitized:
+      OLD: Yes
+      NEW: (empty)
+    Transcript: changed (1368 -> 2204 chars)
+
+BC-0698_Recto
+    Title:
+      OLD: newspaper article about Miami U. president rescu... [61 chars]
+      NEW: Tosses his dime, 11 December 1937
+    Publisher:
+      OLD: The Post
+      NEW: (empty)
+    Summary: changed (134 -> 150 chars)
+    Subject (FAST):
+      OLD: University presidents; Rescues; Shipwrecks
+      NEW: correspondence
+    Genre:
+      OLD: newspapers
+      NEW: clippings (information artifacts)
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1551 -> 0 chars)
+
+BC-0699_Recto
+    Title:
+      OLD: Letter to Mr. Koichi Hasegawa regarding travel p... [64 chars]
+      NEW: Letter to Mr. Koichi Hasegawa, 19 October 1937
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: (empty)
+      NEW: Mr. Koichi Hasegawa
+    Location:
+      OLD: Japan--Osaka
+      NEW: (empty)
+    Summary: changed (129 -> 179 chars)
+    Subject (FAST):
+      OLD: Travel; Correspondence; Tourism
+      NEW: Vacations--Planning; travel
+    Genre:
+      OLD: letters
+      NEW: letters (correspondence)
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+
+BC-0703_Recto
+    Date:
+      OLD: undated
+      NEW: (empty)
+    Subject (FAST):
+      OLD: Dancing; Students; Cultural exchange
+      NEW: dancing; cultural exchange; Thailand; American s... [55 chars]
+    Genre:
+      OLD: forewords
+      NEW: prefaces
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1112 -> 1073 chars)
+
+BC-0708_Recto
+    Title:
+      OLD: College aid letter #4, 1939-11-08
+      NEW: College aid letter #4, 8 November 1939
+    Contributors:
+      OLD: Rabe, Harry E.
+      NEW: Harry E. Rabe
+    Correspondents:
+      OLD: (empty)
+      NEW: Presidents of Ohio Colleges and Universities
+    Subject (FAST):
+      OLD: National Youth Administration (U.S.); Colleges a... [108 chars]
+      NEW: United States. National Youth Administration
+    Genre:
+      OLD: letters
+      NEW: letters (correspondence)
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1096 -> 1125 chars)
+
+BC-0710_Recto
+    Title:
+      OLD: Letter regarding admission of Karoon Gengradomyi... [62 chars]
+      NEW: Letter to Mr. Murray Sheehan, 8 September 1941
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: (empty)
+      NEW: Mr. Murray Sheehan
+    Location:
+      OLD: Ohio--Oxford
+      NEW: Massachusetts--Glouchester
+    Summary: changed (144 -> 213 chars)
+    Subject (FAST):
+      OLD: College students; Admissions
+      NEW: Universities and colleges--Admission; internatio... [60 chars]
+    Genre:
+      OLD: letters
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (685 -> 701 chars)
+
+BC-0711_Recto
+    Title:
+      OLD: Letter regarding commencement speaker, 1941-11-1... [49 chars]
+      NEW: Letter to Mr. Murray Sheehan, 19 November 1941
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: Sheehan, Murray
+      NEW: Mr. Murray Sheehan
+    Summary: changed (180 -> 248 chars)
+    Subject (FAST):
+      OLD: Commencement ceremonies; Thailand--Washington (D... [77 chars]
+      NEW: international relations
+    Genre:
+      OLD: letters
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1917 -> 1918 chars)
+
+BC-0713_Recto
+    Title:
+      OLD: Letter from M.R. Seni Pramoj to Mr. A.H. Upham, ... [52 chars]
+      NEW: Letter from M.R. Seni Pramoj to President A.H. U... [70 chars]
+    Creator:
+      OLD: Pramoj, M. R. Seni
+      NEW: Pramoj, M.R. Seni
+    Correspondents:
+      OLD: Upham, A. H.
+      NEW: A.H. Upham
+    Location:
+      OLD: Washington D.C.
+      NEW: District of Columbia--Washington; Ohio--Oxford
+    Subject (FAST):
+      OLD: Thai students; University presidents; World War,... [58 chars]
+      NEW: Thai students; World War (1939-1945); Miami Univ... [69 chars]
+    Genre:
+      OLD: letters (correspondence)
+      NEW: correspondence
+    Transcript: changed (810 -> 804 chars)
+
+BC-0714_Recto
+    Title:
+      OLD: Letter to Mr. Murray Sheehan regarding commencem... [63 chars]
+      NEW: Letter to Mr. Murray Sheehan from the President,... [60 chars]
+    Creator:
+      OLD: anonymous
+      NEW: Upham, Alfred H.
+    Correspondents:
+      OLD: Sheehan, Murray
+      NEW: Mr. Murray Sheehan
+    Location:
+      OLD: Washington (D.C.)
+      NEW: District of Columbia--Washington
+    Summary: changed (129 -> 194 chars)
+    Subject (FAST):
+      OLD: College presidents; Commencement ceremonies; Dip... [82 chars]
+      NEW: Thailand
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (545 -> 527 chars)
+
+BC-0716_Recto
+    Title:
+      OLD: letter from Royal Thai Legation to President A.H... [67 chars]
+      NEW: Letter to President A. H. Upham from Royal Thai ... [69 chars]
+    Creator:
+      OLD: anonymous
+      NEW: Royal Thai Legation
+    Correspondents:
+      OLD: (empty)
+      NEW: President A. H. Upham
+    Location:
+      OLD: District of Columbia--Washington
+      NEW: District of Columbia--Washington; Ohio--Oxford
+    Subject (FAST):
+      OLD: Thai students; College presidents; Legations
+      NEW: Miami University (Oxford, Ohio); correspondence
+    Genre:
+      OLD: letters (correspondence)
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (793 -> 793 chars)
+
+BC-0718_Recto
+    Title:
+      OLD: Letter from C. V. Hibbard to President A. H. Uph... [62 chars]
+      NEW: Letter to President A. H. Upham from C. V. Hibba... [68 chars]
+    Contributors:
+      OLD: (empty)
+      NEW: John W. Nason
+    Correspondents:
+      OLD: Nason, John W.; Upham, A. H.; Hunt, Everett L.
+      NEW: President A. H. Upham
+    Location:
+      OLD: Ohio--Oxford
+      NEW: Pennsylvania--Philadelphia; Ohio--Oxford
+    Subject (FAST):
+      OLD: Japanese Americans; Universities and colleges; D... [90 chars]
+      NEW: Japanese American college students; United State... [115 chars]
+    Theme:
+      OLD: (empty)
+      NEW: Japanese American education; World War II polici... [50 chars]
+    Genre:
+      OLD: letters (correspondence)
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1654 -> 1653 chars)
+
+BC-0897_Recto
+    Title:
+      OLD: letter regarding Wing Kong Chong, 1940
+      NEW: Letter from Harold V. Lucas to the President of ... [79 chars]
+    Correspondents:
+      OLD: President, Miami University
+      NEW: President of Miami University
+    Summary: changed (176 -> 201 chars)
+    Subject (FAST):
+      OLD: College students; Education; Teaching
+      NEW: education
+    Genre:
+      OLD: letters
+      NEW: letters (correspondence)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1337 -> 1338 chars)
+
+BC-0926_Recto
+    Title:
+      OLD: Letter discussing financial assistance and admis... [106 chars]
+      NEW: Financial assistance given to students and train... [81 chars]
+    Publisher:
+      OLD: United States Department of State
+      NEW: (empty)
+    Location:
+      OLD: United States--Washington D.C.
+      NEW: District of Columbia--Washington
+    Subject (FAST):
+      OLD: Scholarships; Visas; Chinese students
+      NEW: Chinese students
+    Language:
+      OLD: English
+      NEW: (empty)
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1642 -> 1641 chars)
+
+BC-0934_Recto
+    Creator:
+      OLD: Miami University
+      NEW: (empty)
+    Contributors:
+      OLD: (empty)
+      NEW: Carol L. Anderson; Paul F. Erwin; Ernest H. Hahm
+    Correspondents:
+      OLD: (empty)
+      NEW: Rose Choi
+    Date:
+      OLD: undated
+      NEW: (empty)
+    Subject (FAST):
+      OLD: Scholarships; Foreign students; Universities and... [57 chars]
+      NEW: scholarships; foreign students; Korean students
+    Genre:
+      OLD: scholarships
+      NEW: correspondence
+    Rights:
+      OLD: Rights status not determined
+      NEW: (empty)
+    Transcript: changed (1133 -> 1100 chars)
+
+============================================================
+changed cells: 153
+
+REGRESSIONS -- value present in OLD, empty in NEW (36):
+  BC-0688_Recto      Rights           lost: Rights status not determined
+  BC-0692_Recto      Date             lost: undated
+  BC-0692_Recto      Language         lost: English
+  BC-0692_Recto      Rights           lost: Rights status not determined
+  BC-0694_Recto      Rights           lost: Rights status not determined
+  BC-0695_Recto      Rights           lost: Rights status not determined
+  BC-0696_Recto      Rights           lost: Rights status not determined
+  BC-0697_Recto      Creator          lost: anonymous
+  BC-0697_Recto      Publisher        lost: Journal-News
+  BC-0697_Recto      Language         lost: English
+  BC-0697_Recto      Rights           lost: Rights status not determined
+  BC-0697_Recto      Digitized        lost: Yes
+  BC-0698_Recto      Publisher        lost: The Post
+  BC-0698_Recto      Language         lost: English
+  BC-0698_Recto      Rights           lost: Rights status not determined
+  BC-0698_Recto      Transcript       lost: Tosses His Dime\n\nThe Post\n\nU. S. WEATHER FOR... [1585 chars]
+  BC-0699_Recto      Location         lost: Japan--Osaka
+  BC-0699_Recto      Language         lost: English
+  BC-0699_Recto      Rights           lost: Rights status not determined
+  BC-0703_Recto      Date             lost: undated
+  BC-0703_Recto      Rights           lost: Rights status not determined
+  BC-0708_Recto      Language         lost: English
+  BC-0708_Recto      Rights           lost: Rights status not determined
+  BC-0710_Recto      Rights           lost: Rights status not determined
+  BC-0711_Recto      Rights           lost: Rights status not determined
+  BC-0714_Recto      Language         lost: English
+  BC-0714_Recto      Rights           lost: Rights status not determined
+  BC-0716_Recto      Rights           lost: Rights status not determined
+  BC-0718_Recto      Rights           lost: Rights status not determined
+  BC-0897_Recto      Rights           lost: Rights status not determined
+  BC-0926_Recto      Publisher        lost: United States Department of State
+  BC-0926_Recto      Language         lost: English
+  BC-0926_Recto      Rights           lost: Rights status not determined
+  BC-0934_Recto      Creator          lost: Miami University
+  BC-0934_Recto      Date             lost: undated
+  BC-0934_Recto      Rights           lost: Rights status not determined
+
+Newly populated in NEW (15):
+  BC-0688_Recto      Decade
+  BC-0694_Recto      Correspondents
+  BC-0694_Recto      Language
+  BC-0695_Recto      Correspondents
+  BC-0696_Recto      Correspondents
+  BC-0696_Recto      Location
+  BC-0697_Recto      Correspondents
+  BC-0699_Recto      Correspondents
+  BC-0708_Recto      Correspondents
+  BC-0710_Recto      Correspondents
+  BC-0716_Recto      Correspondents
+  BC-0718_Recto      Contributors
+  BC-0718_Recto      Theme
+  BC-0934_Recto      Contributors
+  BC-0934_Recto      Correspondents

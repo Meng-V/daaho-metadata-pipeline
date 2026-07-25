@@ -1,0 +1,592 @@
+{
+  "fixture_version": "1.0",
+  "created": "2026-07-25",
+  "purpose": "Machine-readable capture of the only human verification pass this collection has. Used as a regression baseline: after any prompt/pipeline change, re-run the 19 pilot images and count how many findings below are resolved.",
+  "provenance": {
+    "reviewer": "Jinming Li, student assistant, DAAHO project (departed; no further review passes available)",
+    "review_date": "2026-04 (single pass, incomplete)",
+    "source_document": "comments / suggested corrections -- Jinming (see docs/source/README.md)",
+    "reviewed_against": "BC-0688..BC-0713 were reviewed against an earlier Apr 21 Google Sheet that is NOT in this repo; BC-0716 onward against final_metadata_2026-04-27_handoff.csv. A cell-level diff between the two sheets was promised by the pipeline author but never delivered. Therefore findings on items <= BC-0713 must be re-anchored against current out/*.loc15.json before being treated as live.",
+    "coverage": "16 of 19 pilot images. No review exists for BC-0688, BC-0714, BC-0897."
+  },
+  "status_vocabulary": {
+    "live": "Finding not yet confirmed fixed against current output; treat as open.",
+    "superseded_by_decision": "Overridden by a recorded project decision in docs/DECISIONS.md.",
+    "deferred_no_human_decision": "Human adjudication was required and explicitly declined; value remains unverified AI output."
+  },
+  "error_type_vocabulary": {
+    "spelling_retention": "AI silently normalized a misspelling present in the source. Transcription Policy S2 requires transcribing as written, then giving the correction in [brackets].",
+    "spelling_ocr": "AI misread the source; the transcript text is simply wrong.",
+    "punctuation": "AI altered punctuation. Policy S2 requires retaining punctuation exactly.",
+    "capitalization": "AI altered capitalization.",
+    "date_misread": "AI misread a date; error propagated into multiple fields.",
+    "provenance_unverifiable": "Value may be correct but cannot be traced to anything on the item. Reviewer wrote 'I have no idea where this information came from'.",
+    "unverifiable_insertion": "AI produced text not present in / not verifiable against the source (hallucinated fill of damaged or illegible regions).",
+    "omission": "Source text present on the item was not transcribed at all.",
+    "should_be_illegible": "AI guessed at an unreadable word instead of marking [illegible] / [unclear]."
+  },
+  "items": [
+    {
+      "item_id": "BC-0688_Recto",
+      "human_review": "none",
+      "findings": [],
+      "open_questions": [
+        {
+          "field": "name_spelling",
+          "question": "'Sukhsvasti' vs 'Sukhsvati' - one-letter difference flagged by the pipeline author for human confirmation against the document.",
+          "status": "deferred_no_human_decision",
+          "deferred_on": "2026-07-25",
+          "deferred_by": "Meng Qu (project lead)"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0692_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0692-1",
+          "field": "title",
+          "error_type": "capitalization",
+          "ai_output": "Upham itinerary document, undated",
+          "correction": "Upham Itinerary document, undated",
+          "status": "superseded_by_decision",
+          "note": "Reviewer wanted 'Itinerary' capitalized mid-title. Project decision D-001 sets titles to sentence case, so this correction is not adopted."
+        },
+        {
+          "id": "0692-2",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "7 Nihon Odori, Nakku",
+          "correction": "7 Nihon Odori, Nakaku",
+          "status": "live",
+          "note": "Japanese place name. Policy S2 also requires a [translation] annotation after first use of a foreign-language term."
+        },
+        {
+          "id": "0692-3",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "Singapore, Straits Settlements",
+          "correction": "Singapore, Straits Sett ments [unclear]",
+          "status": "live",
+          "note": "Source is broken/unclear; AI completed it to the expected historical form."
+        },
+        {
+          "id": "0692-4",
+          "field": "transcript",
+          "error_type": "punctuation",
+          "ai_output": "Bombay, India",
+          "correction": "Bombay, India:",
+          "status": "live"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0694_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0694-1",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "Pipeline-injected inference. Was 'anonymous' in the Jan 2026 CSV; changed to 'Upham, Alfred H.' by the Apr 2026 prompt rule 'For Miami University correspondence from 1928-1945, the President was Alfred H. Upham'. See D-002."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0695_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0695-1",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "Same pipeline-injected inference as 0694-1. See D-002."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0696_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0696-1",
+          "field": "title",
+          "error_type": "spelling_ocr",
+          "ai_output": "Letter to President William M. Jardine, 20 October 1937",
+          "correction": "Letter to President William N. Jardine, 20 October 1937",
+          "status": "live",
+          "note": "Middle initial. Same error appears in correspondents and transcript - one misread propagating across three fields."
+        },
+        {
+          "id": "0696-2",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "See D-002."
+        },
+        {
+          "id": "0696-3",
+          "field": "correspondents",
+          "error_type": "spelling_ocr",
+          "ai_output": "President William M. Jardine",
+          "correction": "President William N. Jardine",
+          "status": "live"
+        },
+        {
+          "id": "0696-4",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "President William M. Jardine",
+          "correction": "President William N. Jardine",
+          "status": "live"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0697_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0697-1",
+          "field": "title",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Dr. Upham and family planning trip to Japan, 16 November 1937",
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer could not trace the date 16 November 1937 to anything on the item."
+        },
+        {
+          "id": "0697-2",
+          "field": "correspondents",
+          "error_type": "spelling_ocr",
+          "ai_output": "Ralph McGinnis; Miss Jeni Van Ausdal",
+          "correction": "Ralph McGinnis; Miss Jean Van Ausdall",
+          "status": "live"
+        },
+        {
+          "id": "0697-3",
+          "field": "date",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "1937-11-16",
+          "correction": null,
+          "status": "live"
+        },
+        {
+          "id": "0697-4",
+          "field": "decade",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "1930-1939",
+          "correction": null,
+          "status": "live",
+          "note": "Derived from date; inherits 0697-3."
+        },
+        {
+          "id": "0697-5",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "Miss Jeni Van Ausdal, society and personals, phone Oxford 596.",
+          "correction": "Miss Jean Van Ausdall, society and personals, phone Oxford 596.",
+          "status": "live"
+        },
+        {
+          "id": "0697-6",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "News items may be left at Honack's Studio.",
+          "correction": "News items may be left at Hosack's Studio.",
+          "status": "live"
+        },
+        {
+          "id": "0697-7",
+          "field": "transcript",
+          "error_type": "punctuation",
+          "ai_output": "Electric stove in good condition,",
+          "correction": "Electric stove in good condition.",
+          "status": "live"
+        },
+        {
+          "id": "0697-8",
+          "field": "transcript",
+          "error_type": "unverifiable_insertion",
+          "ai_output": "During the speech, Dr. Evans will show 24 reels of motion pictures which he took last summer on his trip in the West. The pictures are on such subjects as the Great Plains, the forests of the Northwest, and the vegetation of the imperial desert.",
+          "correction": "Multiple spans marked as not present in the original and unverifiable; reviewer inserted [illegible] at each: 'on his [illegible] trip', 'The pictures are [illegible] on such subjects', 'the Gr[eat] [illegible] Plains', 'the No[rth] [illegible]west', 'the [im] [illegible]perial desert'.",
+          "status": "live",
+          "note": "Reviewer's note: 'The highlighted text is not present in the original document and cannot be verified due to missing content in the source.'"
+        },
+        {
+          "id": "0697-9",
+          "field": "transcript",
+          "error_type": "unverifiable_insertion",
+          "ai_output": "The Red Cross roll-call in Oxford will be conducted by students of Stewart and McGuffey schools. Dr. J. W. Heckert will serve as chairman of the canvass which will be held November 18, 19, and 20 through November 30.",
+          "correction": "Spans 'in Ox', 'y students', 'ffey', 'Heckert will', 'the', 'held', '19, and 20', 'er 30.' marked unverifiable against the source.",
+          "status": "live"
+        },
+        {
+          "id": "0697-10",
+          "field": "transcript",
+          "error_type": "unverifiable_insertion",
+          "ai_output": "Seasonal tickets for the Turkey tickets for the Turkey",
+          "correction": "Marked unverifiable; text duplicated and not present in source.",
+          "status": "live"
+        },
+        {
+          "id": "0697-11",
+          "field": "transcript",
+          "error_type": "omission",
+          "ai_output": "cinn / p / A. A. U. W. Arrang / A",
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer: 'The upper-right portion of the original document is missing due to damage, resulting in loss of information that cannot be transcribed. Additionally, text at the bottom of the original document was not included in the AI transcription.'"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0698_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0698-1",
+          "field": "title",
+          "error_type": "capitalization",
+          "ai_output": "Tosses his dime, 11 December 1937",
+          "correction": "Tosses His Dime, 11 December 1937",
+          "status": "superseded_by_decision",
+          "note": "CAUTION: D-001 (sentence case) resolves this as written, but the title is a newspaper headline. The reviewer may have been applying 'retain original capitalization' rather than a title-style preference. Revisit if headline-derived titles become common in the 300-image batch."
+        },
+        {
+          "id": "0698-2",
+          "field": "transcript",
+          "error_type": "omission",
+          "ai_output": null,
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer: 'The corresponding section in the AI-generated transcript is completely blank, despite the presence of text in the original document.'"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0699_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0699-1",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "See D-002."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0703_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0703-1",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "Swadi Nitibon and the little group of other young men from Thailand",
+          "correction": "Swasdi Nitibhon and the little group of other young men from Thailand",
+          "status": "live",
+          "note": "RESOLVED name-spelling question: this was one of five flagged for human confirmation. Reviewer confirmed 'Swasdi Nitibhon' against the image."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0708_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0708-1",
+          "field": "title",
+          "error_type": "capitalization",
+          "ai_output": "College aid letter #4, 8 November 1939",
+          "correction": "COLLEGE AID LETTER #4, 8 November 1939",
+          "status": "superseded_by_decision",
+          "note": "CAUTION: same caveat as 0698-1. The document itself reads 'COLLEGE AID LETTER #4' in all caps; the reviewer may have been retaining source capitalization, not requesting a title style."
+        },
+        {
+          "id": "0708-2",
+          "field": "transcript",
+          "error_type": "spelling_retention",
+          "ai_output": "Sincerely yours,",
+          "correction": "Sincerly [Sincerely] yours.",
+          "status": "live",
+          "note": "FLAGSHIP CASE. The source misspells 'Sincerly'; the AI silently corrected it. The reviewer's correction is exactly the Transcription Policy S2 format: transcribe as written, then give the correction in [brackets]. Any prompt fix must reproduce this format."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0710_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0710-1",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "See D-002."
+        },
+        {
+          "id": "0710-2",
+          "field": "place",
+          "error_type": "spelling_ocr",
+          "ai_output": "Massachusetts--Glouchester",
+          "correction": "Massachusetts--Gloucester",
+          "status": "live",
+          "note": "vocab/fast_places.txt already carries the correct 'Massachusetts--Gloucester', so place enforcement should have caught this."
+        },
+        {
+          "id": "0710-3",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "Monsonhurst 59",
+          "correction": "Wonsonhurst 59",
+          "status": "live"
+        },
+        {
+          "id": "0710-4",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "Glouchester, Massachusetts",
+          "correction": "Gloucester, Massachusetts",
+          "status": "live"
+        },
+        {
+          "id": "0710-5",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "September 14",
+          "correction": "September 1? [unclear]",
+          "status": "live"
+        }
+      ],
+      "open_questions": [
+        {
+          "field": "name_spelling",
+          "question": "Addressee 'Murray Sheehan' (AI) vs 'Murray Seehan' (earlier human note) - flagged by the pipeline author for confirmation against the document. The reviewer's pass did not address it.",
+          "status": "deferred_no_human_decision",
+          "deferred_on": "2026-07-25",
+          "deferred_by": "Meng Qu (project lead)"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0711_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0711-1",
+          "field": "creator",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Upham, Alfred H.",
+          "correction": null,
+          "status": "live",
+          "note": "See D-002."
+        },
+        {
+          "id": "0711-2",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "If he will arrange to undertake this responsibility",
+          "correction": "If he can arrange to undertake this responsibility",
+          "status": "live"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0713_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0713-1",
+          "field": "title",
+          "error_type": "date_misread",
+          "ai_output": "28 February 1942",
+          "correction": "26 February 1942",
+          "status": "live",
+          "note": "Single OCR error propagating into title, date, and transcript (0713-1, 0713-2, 0713-4)."
+        },
+        {
+          "id": "0713-2",
+          "field": "date",
+          "error_type": "date_misread",
+          "ai_output": "1942-02-28",
+          "correction": "1942-02-26",
+          "status": "live"
+        },
+        {
+          "id": "0713-3",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "RECEIVED",
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer marked as illegible in source."
+        },
+        {
+          "id": "0713-4",
+          "field": "transcript",
+          "error_type": "date_misread",
+          "ai_output": "February 28th, 1942.",
+          "correction": "February 26th, 1942.",
+          "status": "live"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0714_Recto",
+      "human_review": "none",
+      "findings": [],
+      "note": "Reviewer stated she would begin here with the updated sheet, then departed. No review exists."
+    },
+    {
+      "item_id": "BC-0716_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0716-1",
+          "field": "transcript",
+          "error_type": "spelling_retention",
+          "ai_output": "STUDENT'S DEPARTMENT.",
+          "correction": "STUDENTS' DEPARTMENT",
+          "status": "live",
+          "note": "Apostrophe position altered from the source, plus a trailing period added. Policy S2: retain capitalization and punctuation exactly."
+        },
+        {
+          "id": "0716-2",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "[handwritten] Murry [unclear]",
+          "correction": "[handwritten] [unclear]",
+          "status": "live",
+          "note": "AI guessed a surname in a handwritten passage. Policy S2 routes handwritten material to manual transcription; see D-003."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0718_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0718-1",
+          "field": "place",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Pennsylvania--Philadelphia;",
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer could not trace 'Pennsylvania' to the item. NOTE THE CONFLICT: the archivist MAP review lists BC-0718 as a MISSED location that SHOULD be 'Pennsylvania--Philadelphia'. The two reviews were written against different pipeline versions. Resolve by checking the image."
+        },
+        {
+          "id": "0718-2",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "[handwritten] C V Hibbard",
+          "correction": "[handwritten]",
+          "status": "live",
+          "note": "AI read a name out of handwriting the reviewer judged unreadable. Note creator is 'Hibbard, C. V.' - if that attribution rests on this guess, it is circular."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0897_Recto",
+      "human_review": "none",
+      "findings": [],
+      "open_questions": [
+        {
+          "field": "name_spelling",
+          "question": "'Wing Kong Chong' (AI) vs 'Wing Kong' (earlier human note) - does the document give a three-part name? Flagged for confirmation; never reviewed.",
+          "status": "deferred_no_human_decision",
+          "deferred_on": "2026-07-25",
+          "deferred_by": "Meng Qu (project lead)"
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0926_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0926-1",
+          "field": "transcript",
+          "error_type": "unverifiable_insertion",
+          "ai_output": "FOR VICTORY / BUY / UNITED / STATES / WAR / SAVINGS / BONDS / AND / STAMPS",
+          "correction": "WAR / SAVINGS [delete] / BONDS / AND / STAMPS",
+          "status": "live",
+          "note": "Reviewer marked 'SAVINGS' for deletion - an extra word not on the item. Also note this is stationery letterhead, which Policy S2 says must not be transcribed at all."
+        },
+        {
+          "id": "0926-2",
+          "field": "transcript",
+          "error_type": "should_be_illegible",
+          "ai_output": "[handwritten] FLS",
+          "correction": null,
+          "status": "live",
+          "note": "Reviewer marked as illegible."
+        }
+      ]
+    },
+    {
+      "item_id": "BC-0934_Recto",
+      "human_review": "reviewed",
+      "findings": [
+        {
+          "id": "0934-1",
+          "field": "contributors",
+          "error_type": "provenance_unverifiable",
+          "ai_output": "Carol L. Anderson; Paul F. Erwin; Ernest H. Hahm",
+          "correction": null,
+          "status": "live"
+        },
+        {
+          "id": "0934-2",
+          "field": "correspondents",
+          "error_type": "should_be_illegible",
+          "ai_output": "Rose Choi",
+          "correction": "Ros[?] Choi",
+          "status": "live",
+          "note": "Reviewer would not commit to the final letter in the correspondents field, but did read 'Rosa' in the transcript context (0934-4)."
+        },
+        {
+          "id": "0934-3",
+          "field": "transcript",
+          "error_type": "spelling_retention",
+          "ai_output": "Provision for vacation and holiday periods",
+          "correction": "Provisions for vacation and holiday periods",
+          "status": "live"
+        },
+        {
+          "id": "0934-4",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "Rose Choi",
+          "correction": "Rosa Choi",
+          "status": "live",
+          "note": "RESOLVED name-spelling question. Source line reads 'Student Selected -- Rose Choi' in OCR; reviewer read 'Rosa Choi' from the image."
+        },
+        {
+          "id": "0934-5",
+          "field": "transcript",
+          "error_type": "spelling_ocr",
+          "ai_output": "10-254 Yon Am-Dong",
+          "correction": "18-254 Ton Am-Dong",
+          "status": "live",
+          "note": "Korean address. Policy S2 also requires a [translation] annotation after first use of a foreign-language term."
+        }
+      ]
+    }
+  ]
+}
