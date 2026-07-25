@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [
+      "Sukhvachasti, Prasob"
+    ],
+    "correspondents": null,
+    "creator": "Upham, Alfred H.",
+    "date": "1937-10-20",
+    "decade": "1930-1939",
+    "description": "A letter signed \"President\" and attributed from Miami University context to Alfred H. Upham addresses the Minister from Siam concerning Prasob Sukhvachasti's return to Miami University to continue his college course. The writer describes Sukhvachasti's previous work and relationships on campus, his teaching and newspaper experience, and his anticipated completion of the A. B. degree in June and the Master's degree about February 1, 1939.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": 90,
+      "correspondents": null,
+      "creator": 30,
+      "date": 98,
+      "description": 93,
+      "genre": 95,
+      "language": 100,
+      "place": 75,
+      "subjects": 85,
+      "title": 95,
+      "transcript": 98
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "letters (correspondence)"
+    ],
+    "identifier": null,
+    "keywords": null,
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": "Ohio--Oxford; District of Columbia--Washington",
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "correspondence",
+      "Miami University (Oxford, Ohio)",
+      "international students",
+      "college students"
+    ],
+    "text_reading": null,
+    "theme": null,
+    "title": "Letter to the minister from Siam regarding Prasob Sukhvachasti, 20 October 1937",
+    "transcript": "[page 1]\nOctober 20, 1937\n\nHis Excellency, the Minister from Siam\nSiamese Legation\nWashington, D. C. [District of Columbia]\n\nDear Sir:\n\nPrasob Sukhvachasti, who has returned to Miami University this fall to continue his college course here, has asked me to write you regarding the record and impression he has made on our campus.\n\nDuring his earlier residence with us we all came to think very highly of him, both on account of his natural ability and because of the determination with which he went to work to improve upon his record in the past and to profit by the educational opportunities here. Except for his wider experience he was just another Miami student, unassuming, dependable, and interested in what life here had to offer. He did first class work in his studies and made many friends among students and faculty. We have all been delighted to have him return to us this year.\n\nThere is every indication that the young man has entered upon his work this fall with the same fine spirit he manifested before. In the interval he has had added experiences in teaching and in newspaper work, so that he has more definite objectives than before. His idea of continuing here until he has completed work for the Master's degree seems to me entirely sound, since he will have slightly more than enough credits for the A. B. [Bachelor of Arts] degree at commencement time in June, and can qualify for the Master's degree by the middle of the next college year, about February 1, 1939. I am sure that you may count upon him to do what he undertakes and fulfill all obligations.\n\nRespectfully yours,\n\nPresident",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\nOctober 20, 1937\n\nHis Excellency, the Minister from Siam\nSiamese Legation\nWashington, D. C. [District of Columbia]\n\nDear Sir:\n\nPrasob Sukhvachasti, who has returned to Miami University this fall to continue his college course here, has asked me to write you regarding the record and impression he has made on our campus.\n\nDuring his earlier residence with us we all came to think very highly of him, both on account of his natural ability and because of the determination with which he went to work to improve upon his record in the past and to profit by the educational opportunities here. Except for his wider experience he was just another Miami student, unassuming, dependable, and interested in what life here had to offer. He did first class work in his studies and made many friends among students and faculty. We have all been delighted to have him return to us this year.\n\nThere is every indication that the young man has entered upon his work this fall with the same fine spirit he manifested before. In the interval he has had added experiences in teaching and in newspaper work, so that he has more definite objectives than before. His idea of continuing here until he has completed work for the Master's degree seems to me entirely sound, since he will have slightly more than enough credits for the A. B. [Bachelor of Arts] degree at commencement time in June, and can qualify for the Master's degree by the middle of the next college year, about February 1, 1939. I am sure that you may count upon him to do what he undertakes and fulfill all obligations.\n\nRespectfully yours,\n\nPresident",
+      "text_reading": null,
+      "description": "A letter signed \"President\" and attributed from Miami University context to Alfred H. Upham addresses the Minister from Siam concerning Prasob Sukhvachasti's return to Miami University to continue his college course. The writer describes Sukhvachasti's previous work and relationships on campus, his teaching and newspaper experience, and his anticipated completion of the A. B. degree in June and the Master's degree about February 1, 1939.",
+      "title": "Letter to the minister from Siam regarding Prasob Sukhvachasti, 20 October 1937",
+      "generated_title": null,
+      "date": "1937-10-20",
+      "contributors": [
+        "Sukhvachasti, Prasob"
+      ],
+      "correspondents": null,
+      "place": "Ohio--Oxford; District of Columbia--Washington",
+      "keywords": null,
+      "decade": "1930-1939"
+    },
+    "tier2": {
+      "subjects": [
+        "correspondence",
+        "Miami University (Oxford, Ohio)",
+        "international students",
+        "college students"
+      ],
+      "genre": [
+        "letters (correspondence)"
+      ],
+      "creator": "Upham, Alfred H.",
+      "publisher": null,
+      "theme": null
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0695_Recto.jpg",
+    "processing_confidence": 0.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 3406,
+      "height": 4389,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 1535435
+    },
+    "cost_usd": 0.138678,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [
+          {
+            "iso_date": "1937-10-20",
+            "precision": "day",
+            "line_idx": 1,
+            "raw": "October 20, 1937",
+            "confidence": 0.95
+          },
+          {
+            "iso_date": "1939-02-01",
+            "precision": "day",
+            "line_idx": 8,
+            "raw": "February 1, 1939",
+            "confidence": 0.95
+          }
+        ],
+        "header_places": []
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Letter to the minister from Siam regarding Prasob Sukhvachasti, 20 October 1937",
+      "normalized_title": "Letter to the minister from Siam regarding Prasob Sukhvachasti, 20 October 1937",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    }
+  }
+}

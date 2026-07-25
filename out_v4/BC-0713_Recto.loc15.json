@@ -1,0 +1,177 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [],
+    "correspondents": [
+      "Pramoj, M. R. Seni",
+      "Upham, A. H."
+    ],
+    "creator": "Pramoj, M. R. Seni",
+    "date": "1942-02-26",
+    "decade": "1940-1949",
+    "description": "M. R. Seni Pramoj, Minister for Thailand, writes to A. H. Upham, president of Miami University, to thank him for offering accommodations for the annual meeting of Thai students. Pramoj states that the meeting must be canceled because of the War and expresses hope that Thai students may visit the Miami University campus in the future.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": null,
+      "correspondents": 100,
+      "creator": 100,
+      "date": 100,
+      "description": 98,
+      "genre": 98,
+      "language": 100,
+      "place": 100,
+      "subjects": 85,
+      "title": 100,
+      "transcript": 90
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "letters (correspondence)"
+    ],
+    "identifier": null,
+    "keywords": [],
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": "District of Columbia--Washington; Ohio--Oxford",
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "correspondence",
+      "international students",
+      "Miami University (Oxford, Ohio)"
+    ],
+    "text_reading": null,
+    "theme": [],
+    "title": "Letter to A. H. Upham from M. R. Seni Pramoj, 26 February 1942",
+    "transcript": "[page 1]\n[handwritten] [unclear]\n[handwritten] MAR 2 1942\n\nNo. [Number] 192/3485\n\nFebruary 26th, 1942.\n\nMr. [Mister] A. H. Upham, President of Miami University, Oxford, Ohio.\n\nMy dear President Upham,\n\nThank you for your letter of February 4th and for your offer to give accommodation to the annual meeting of Thai students.\n\nI much regret that, owing to the War, we shall have to cancel our usual Students' Meeting this year and we shall therefore be unable to avail ourselves of the hospitality which you have so kindly extended on behalf of Miami University. I trust, however, that, at some future date and under happier circumstances, it will be possible to bring our students to your campus.\n\nYours very truly,\n\n[handwritten] [illegible]\n\nM. R. Seni Pramoj\nMinister for Thailand.",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\n[handwritten] [unclear]\n[handwritten] MAR 2 1942\n\nNo. [Number] 192/3485\n\nFebruary 26th, 1942.\n\nMr. [Mister] A. H. Upham, President of Miami University, Oxford, Ohio.\n\nMy dear President Upham,\n\nThank you for your letter of February 4th and for your offer to give accommodation to the annual meeting of Thai students.\n\nI much regret that, owing to the War, we shall have to cancel our usual Students' Meeting this year and we shall therefore be unable to avail ourselves of the hospitality which you have so kindly extended on behalf of Miami University. I trust, however, that, at some future date and under happier circumstances, it will be possible to bring our students to your campus.\n\nYours very truly,\n\n[handwritten] [illegible]\n\nM. R. Seni Pramoj\nMinister for Thailand.",
+      "text_reading": null,
+      "description": "M. R. Seni Pramoj, Minister for Thailand, writes to A. H. Upham, president of Miami University, to thank him for offering accommodations for the annual meeting of Thai students. Pramoj states that the meeting must be canceled because of the War and expresses hope that Thai students may visit the Miami University campus in the future.",
+      "title": "Letter to A. H. Upham from M. R. Seni Pramoj, 26 February 1942",
+      "generated_title": null,
+      "date": "1942-02-26",
+      "contributors": [],
+      "correspondents": [
+        "Pramoj, M. R. Seni",
+        "Upham, A. H."
+      ],
+      "place": "District of Columbia--Washington; Ohio--Oxford",
+      "keywords": [],
+      "decade": "1940-1949"
+    },
+    "tier2": {
+      "subjects": [
+        "correspondence",
+        "international students",
+        "Miami University (Oxford, Ohio)"
+      ],
+      "genre": [
+        "letters (correspondence)"
+      ],
+      "creator": "Pramoj, M. R. Seni",
+      "publisher": null,
+      "theme": []
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0713_Recto.jpg",
+    "processing_confidence": 85.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 3406,
+      "height": 4362,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 931655
+    },
+    "cost_usd": 0.123977,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [],
+        "header_places": []
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Letter to A. H. Upham from M. R. Seni Pramoj, 26 February 1942",
+      "normalized_title": "Letter to A. H. Upham from M. R. Seni Pramoj, 26 February 1942",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    }
+  }
+}

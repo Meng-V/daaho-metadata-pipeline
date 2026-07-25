@@ -1,0 +1,197 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [],
+    "correspondents": [
+      "Royal Thai Legation",
+      "Upham, Alfred H."
+    ],
+    "creator": "Royal Thai Legation",
+    "date": "1942-06-02",
+    "decade": "1940-1949",
+    "description": "The Royal Thai Legation's Students' Department writes to President A. H. Upham of Miami University following the writer's return to the legation. The writer thanks Upham for courtesies received at the University, praises the work being done there, and says that being the agency through which the University secured the previous day's Commencement speaker would make the writer's “cup” run over. The letter sends regards to Mrs. Upham.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": null,
+      "correspondents": 90,
+      "creator": 85,
+      "date": 100,
+      "description": 95,
+      "genre": 90,
+      "language": 100,
+      "place": 95,
+      "subjects": 80,
+      "title": 95,
+      "transcript": 95
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "letters (correspondence)"
+    ],
+    "identifier": null,
+    "keywords": [],
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": "District of Columbia--Washington; Ohio--Oxford",
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "correspondence",
+      "Miami University (Oxford, Ohio)"
+    ],
+    "text_reading": null,
+    "theme": [],
+    "title": "Letter to President A. H. Upham from the Royal Thai Legation, 2 June 1942",
+    "transcript": "[page 1]\nJune 2, 1942\n\nPresident A. H. Upham [Alfred H. Upham]\nMiami University\nOxford, Ohio\n\nDear President Upham:\n\nJust a line, upon my return to the Legation, to thank you for the many courtesies which were shown to me while I was at the University, and to tell you again how proud I am of the wonderful work which you are doing there. There is a charm and a dignity about the place which I had never so thoroughly felt before. If only I could now be looking backward to the pleasure of having been the agency through whom you secured yesterday's Commencement speaker, my cup would indeed be running over. I shall still hope in that direction!\n\nKindest regards to Mrs. Upham and yourself.\n\nSincerely yours,\n\n[handwritten] [illegible]",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\nJune 2, 1942\n\nPresident A. H. Upham [Alfred H. Upham]\nMiami University\nOxford, Ohio\n\nDear President Upham:\n\nJust a line, upon my return to the Legation, to thank you for the many courtesies which were shown to me while I was at the University, and to tell you again how proud I am of the wonderful work which you are doing there. There is a charm and a dignity about the place which I had never so thoroughly felt before. If only I could now be looking backward to the pleasure of having been the agency through whom you secured yesterday's Commencement speaker, my cup would indeed be running over. I shall still hope in that direction!\n\nKindest regards to Mrs. Upham and yourself.\n\nSincerely yours,\n\n[handwritten] [illegible]",
+      "text_reading": null,
+      "description": "The Royal Thai Legation's Students' Department writes to President A. H. Upham of Miami University following the writer's return to the legation. The writer thanks Upham for courtesies received at the University, praises the work being done there, and says that being the agency through which the University secured the previous day's Commencement speaker would make the writer's “cup” run over. The letter sends regards to Mrs. Upham.",
+      "title": "Letter to President A. H. Upham from the Royal Thai Legation, 2 June 1942",
+      "generated_title": null,
+      "date": "1942-06-02",
+      "contributors": [],
+      "correspondents": [
+        "Royal Thai Legation",
+        "Upham, Alfred H."
+      ],
+      "place": "District of Columbia--Washington; Ohio--Oxford",
+      "keywords": [],
+      "decade": "1940-1949"
+    },
+    "tier2": {
+      "subjects": [
+        "correspondence",
+        "Miami University (Oxford, Ohio)"
+      ],
+      "genre": [
+        "letters (correspondence)"
+      ],
+      "creator": "Royal Thai Legation",
+      "publisher": null,
+      "theme": []
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0716_Recto.jpg",
+    "processing_confidence": 0.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 3397,
+      "height": 4389,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 1015663
+    },
+    "cost_usd": 0.074052,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [
+          {
+            "iso_date": "1942-06-02",
+            "precision": "day",
+            "line_idx": 1,
+            "raw": "June 2, 1942",
+            "confidence": 0.95
+          },
+          {
+            "iso_date": "1942",
+            "precision": "year",
+            "line_idx": 1,
+            "raw": "1942",
+            "confidence": 0.6
+          }
+        ],
+        "header_places": [
+          {
+            "fast_place": "Ohio--Oxford",
+            "line_idx": 4,
+            "raw": "Oxford, Ohio",
+            "confidence": 0.85
+          }
+        ]
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Letter to President A. H. Upham from the Royal Thai Legation, 2 June 1942",
+      "normalized_title": "Letter to President A. H. Upham from the Royal Thai Legation, 2 June 1942",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    }
+  }
+}

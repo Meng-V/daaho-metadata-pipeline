@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [],
+    "correspondents": [],
+    "creator": "Department of State",
+    "date": "1945-09-20",
+    "decade": "1940-1949",
+    "description": "The Department of State records a request from the American Ambassador to China concerning financial assistance for Chinese students and trainees and the admission of Chinese nationals to American colleges and universities. It asks that information about scholarships, fellowships, stipends, and other financial assistance be sent to the appropriate Embassy or consular office, and that colleges send notices of admittance directly to visa-issuing offices. The document notes that 4(e) visas may not be issued when admission certificates are conditional.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": null,
+      "correspondents": null,
+      "creator": 90,
+      "date": 100,
+      "description": 95,
+      "genre": null,
+      "language": 100,
+      "place": 90,
+      "subjects": null,
+      "title": 95,
+      "transcript": 90
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "correspondence"
+    ],
+    "identifier": null,
+    "keywords": [],
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": "District of Columbia--Washington",
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "Universities and colleges--Admission",
+      "Universities and colleges",
+      "American students"
+    ],
+    "text_reading": null,
+    "theme": [],
+    "title": "Department of State memorandum on Chinese students and trainees, 20 September 1945",
+    "transcript": "[page 1]\n[handwritten] [unclear]\n\n20 September 1945\n\n[underlined: Financial assistance given to students and trainees from China.]\n[underlined: Admission of Chinese nationals to American colleges and universities.]\n\nThe American Ambassador to China has made the following request concerning the above two subjects:\n\n“It would be helpful in the handling of the visa applications of Chinese students and trainees proceeding to the United States if the Department could make known as widely as possible to colleges and universities, special bodies administering scholarship funds such as the China Institute, and to American business organizations accepting Chinese as trainees, that advice of the grant of scholar-ships, fellowships, stipends and other financial assistance, should be sent directly to the Embassy or to the consular office of the district in which the applicant resides and that advice furnished should be as specific as possible in regard to the amount of such assistance. This is necessary in order to have some assurance of the authenticity of the information and of the adequacy of the financial assistance.\n\n“It would be helpful if colleges and universities could be asked to send their [underlined: notices of admittance] directly to the visa issuing office and to make the admittance of students absolute and not condi-tional upon the presentation of satisfactory credentials as frequently is the case.”\n\nIt should be noted that 4(e) visas may not be given when admis-sion certificates are conditional.",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\n[handwritten] [unclear]\n\n20 September 1945\n\n[underlined: Financial assistance given to students and trainees from China.]\n[underlined: Admission of Chinese nationals to American colleges and universities.]\n\nThe American Ambassador to China has made the following request concerning the above two subjects:\n\n“It would be helpful in the handling of the visa applications of Chinese students and trainees proceeding to the United States if the Department could make known as widely as possible to colleges and universities, special bodies administering scholarship funds such as the China Institute, and to American business organizations accepting Chinese as trainees, that advice of the grant of scholar-ships, fellowships, stipends and other financial assistance, should be sent directly to the Embassy or to the consular office of the district in which the applicant resides and that advice furnished should be as specific as possible in regard to the amount of such assistance. This is necessary in order to have some assurance of the authenticity of the information and of the adequacy of the financial assistance.\n\n“It would be helpful if colleges and universities could be asked to send their [underlined: notices of admittance] directly to the visa issuing office and to make the admittance of students absolute and not condi-tional upon the presentation of satisfactory credentials as frequently is the case.”\n\nIt should be noted that 4(e) visas may not be given when admis-sion certificates are conditional.",
+      "text_reading": null,
+      "description": "The Department of State records a request from the American Ambassador to China concerning financial assistance for Chinese students and trainees and the admission of Chinese nationals to American colleges and universities. It asks that information about scholarships, fellowships, stipends, and other financial assistance be sent to the appropriate Embassy or consular office, and that colleges send notices of admittance directly to visa-issuing offices. The document notes that 4(e) visas may not be issued when admission certificates are conditional.",
+      "title": "Department of State memorandum on Chinese students and trainees, 20 September 1945",
+      "generated_title": null,
+      "date": "1945-09-20",
+      "contributors": [],
+      "correspondents": [],
+      "place": "District of Columbia--Washington",
+      "keywords": [],
+      "decade": "1940-1949"
+    },
+    "tier2": {
+      "subjects": [],
+      "genre": [],
+      "creator": "Department of State",
+      "publisher": null,
+      "theme": []
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0926_Recto.jpg",
+    "processing_confidence": 0.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 4914,
+      "height": 6412,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 4327714
+    },
+    "cost_usd": 0.072008,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [
+          {
+            "iso_date": "1945-09-20",
+            "precision": "day",
+            "line_idx": 2,
+            "raw": "20 September 1945",
+            "confidence": 0.95
+          },
+          {
+            "iso_date": "1945-09",
+            "precision": "month",
+            "line_idx": 2,
+            "raw": "September 1945",
+            "confidence": 0.8
+          }
+        ],
+        "header_places": []
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Department of State memorandum on Chinese students and trainees, 20 September 1945",
+      "normalized_title": "Department of State memorandum on Chinese students and trainees, 20 September 1945",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    },
+    "policy_notes": [
+      "Derived subjects deterministically from metadata text overlap with approved FAST list.",
+      "Applied deterministic fallback AAT genre 'correspondence'."
+    ]
+  }
+}

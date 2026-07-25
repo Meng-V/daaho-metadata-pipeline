@@ -1,0 +1,190 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [],
+    "correspondents": [
+      "Upham, Alfred H.",
+      "Tomizawa, Kiyoshi"
+    ],
+    "creator": "Upham, Alfred H.",
+    "date": "1937-10-19",
+    "decade": "1930-1939",
+    "description": "Alfred H. Upham, president of Miami University, writes to Mr. Kiyoshi Tomizawa in San Francisco about the Upham family's proposed winter vacation around the world. Upham says they plan to sail from San Francisco on the President Hoover on 13 November, hopes they may land at Yokohama and spend several days in Japan, and asks to meet Tomizawa before sailing. He also recalls Tomizawa's June visit to Oxford and praises the work Tomizawa is doing.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": null,
+      "correspondents": 65,
+      "creator": 30,
+      "date": 98,
+      "description": 90,
+      "genre": 95,
+      "language": 98,
+      "place": 45,
+      "subjects": 85,
+      "title": 90,
+      "transcript": 96
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "letters (correspondence)"
+    ],
+    "identifier": null,
+    "keywords": [],
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": "Ohio--Oxford; California--San Francisco",
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "correspondence",
+      "travel"
+    ],
+    "text_reading": null,
+    "theme": [],
+    "title": "Letter to Mr. Kiyoshi Tomizawa from the president, 19 October 1937",
+    "transcript": "[page 1]\nOctober 19, 1937\n\nMr. Kiyoshi Tomizawa\n1928 Bush Street\nSan Francisco, California\n\nMy dear Tomizawa:\n\nAll summer and fall the Upham family have been planning a winter vacation which would take the shape of a trip around the world. In spite of many discouragements we are still hopeful of carrying out our plans. If we do, we shall sail from San Francisco at noon on Saturday, November 13, using the President Hoover of the Dollar Line. Of course these ships do not now touch at any Chinese ports, but we are still hopeful that we may be allowed to land at Yokohama and spend a number of days in Japan. For this reason in particular I should enjoy having opportunity for a chat with you either at the pier or shortly before we sail. Since our time is limited we do not expect to reach San Francisco before Friday night. We shall probably stay overnight at the Sir Francis Drake Hotel.\n\nWe all enjoyed your visit to Oxford in June quite as much as I suspect you did. You reestablished many warm friendships here, and we are all proud of the work you are doing.\n\nWith all good wishes,\n\nVery truly yours,\n\nPresident",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\nOctober 19, 1937\n\nMr. Kiyoshi Tomizawa\n1928 Bush Street\nSan Francisco, California\n\nMy dear Tomizawa:\n\nAll summer and fall the Upham family have been planning a winter vacation which would take the shape of a trip around the world. In spite of many discouragements we are still hopeful of carrying out our plans. If we do, we shall sail from San Francisco at noon on Saturday, November 13, using the President Hoover of the Dollar Line. Of course these ships do not now touch at any Chinese ports, but we are still hopeful that we may be allowed to land at Yokohama and spend a number of days in Japan. For this reason in particular I should enjoy having opportunity for a chat with you either at the pier or shortly before we sail. Since our time is limited we do not expect to reach San Francisco before Friday night. We shall probably stay overnight at the Sir Francis Drake Hotel.\n\nWe all enjoyed your visit to Oxford in June quite as much as I suspect you did. You reestablished many warm friendships here, and we are all proud of the work you are doing.\n\nWith all good wishes,\n\nVery truly yours,\n\nPresident",
+      "text_reading": null,
+      "description": "Alfred H. Upham, president of Miami University, writes to Mr. Kiyoshi Tomizawa in San Francisco about the Upham family's proposed winter vacation around the world. Upham says they plan to sail from San Francisco on the President Hoover on 13 November, hopes they may land at Yokohama and spend several days in Japan, and asks to meet Tomizawa before sailing. He also recalls Tomizawa's June visit to Oxford and praises the work Tomizawa is doing.",
+      "title": "Letter to Mr. Kiyoshi Tomizawa from the president, 19 October 1937",
+      "generated_title": null,
+      "date": "1937-10-19",
+      "contributors": [],
+      "correspondents": [
+        "Upham, Alfred H.",
+        "Tomizawa, Kiyoshi"
+      ],
+      "place": "Ohio--Oxford; California--San Francisco",
+      "keywords": [],
+      "decade": "1930-1939"
+    },
+    "tier2": {
+      "subjects": [
+        "correspondence",
+        "travel"
+      ],
+      "genre": [
+        "letters (correspondence)"
+      ],
+      "creator": "Upham, Alfred H.",
+      "publisher": null,
+      "theme": []
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0694_Recto.jpg",
+    "processing_confidence": 0.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 3397,
+      "height": 4398,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 1438917
+    },
+    "cost_usd": 0.074548,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [
+          {
+            "iso_date": "1937-10-19",
+            "precision": "day",
+            "line_idx": 1,
+            "raw": "October 19, 1937",
+            "confidence": 0.95
+          }
+        ],
+        "header_places": [
+          {
+            "fast_place": "California--San Francisco",
+            "line_idx": 4,
+            "raw": "San Francisco, California",
+            "confidence": 0.85
+          }
+        ]
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Letter to Mr. Kiyoshi Tomizawa from the president, 19 October 1937",
+      "normalized_title": "Letter to Mr. Kiyoshi Tomizawa from the president, 19 October 1937",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    }
+  }
+}

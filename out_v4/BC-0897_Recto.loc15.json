@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "box": null,
+    "call_number": null,
+    "collection": null,
+    "contributors": [],
+    "correspondents": [],
+    "creator": "Lucas, Harold V.",
+    "date": "1940-04-24",
+    "decade": "1940-1949",
+    "description": "Harold V. Lucas writes to the president of Miami University concerning Ming Kong Chong, a student expected to graduate in 1940 and return to Hawaii to work in the public instruction department as a teacher. Lucas offers testimony about Chong's character, leadership, and willingness to help, based on having known him for eight years.",
+    "digital_collection": null,
+    "digital_identifier": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "field_confidence": {
+      "contributors": null,
+      "correspondents": null,
+      "creator": 95,
+      "date": 95,
+      "description": 78,
+      "genre": 90,
+      "language": 100,
+      "place": null,
+      "subjects": 80,
+      "title": 92,
+      "transcript": 65
+    },
+    "folder": null,
+    "format": null,
+    "generated_title": null,
+    "genre": [
+      "letters (correspondence)"
+    ],
+    "identifier": null,
+    "keywords": [],
+    "language": "English",
+    "medium": null,
+    "permalink": null,
+    "place": null,
+    "publisher": null,
+    "repository": null,
+    "reproduction_number": null,
+    "rights": null,
+    "series": null,
+    "subjects": [
+      "correspondence",
+      "college students",
+      "Miami University (Oxford, Ohio)"
+    ],
+    "text_reading": null,
+    "theme": [],
+    "title": "Letter from Harold V. Lucas concerning a Miami University student, 24 April 1940",
+    "transcript": "[page 1]\nApril 24, 1940\n\nPresident\nMiami University\nOxford, Ohio\n\nDear Sir:\n\nIt has come to my attention that a personal note from me might well be of value to you with the character and person of one of your students Ming Kong Chong who, I understand, hopes to be graduated from your University in 1940 with intention of returning to Hawaii to enter the department of public instruction as a teacher here. I am very pleased to send this word of testimony concerning Mr. Chong whom I have known for the past eight years. While I am not qualified to speak for his scholastic ability, I do feel that I know enough of him and his [illegible] to say definitely that he is the type of young man we are hoping [illegible] more and more will enter the public school system here.\n\nI knew Ming Kong when he was in high school and during a summer camp I came to know him even better. His character, I believe, is above reproach. His willingness to be helpful and his leadership even as a boy was very definitely an asset to the camp. In [illegible] during his years on the mainland, he has continued on the path I knew him to follow. I am sure he will be a splendid teacher and friend to young people.\n\nVery cordially yours,\n\nHarold V. Lucas,\nGENERAL SECRETARY YMCA [Young Men's Christian Association]\n\n[illegible]",
+    "type": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "[page 1]\nApril 24, 1940\n\nPresident\nMiami University\nOxford, Ohio\n\nDear Sir:\n\nIt has come to my attention that a personal note from me might well be of value to you with the character and person of one of your students Ming Kong Chong who, I understand, hopes to be graduated from your University in 1940 with intention of returning to Hawaii to enter the department of public instruction as a teacher here. I am very pleased to send this word of testimony concerning Mr. Chong whom I have known for the past eight years. While I am not qualified to speak for his scholastic ability, I do feel that I know enough of him and his [illegible] to say definitely that he is the type of young man we are hoping [illegible] more and more will enter the public school system here.\n\nI knew Ming Kong when he was in high school and during a summer camp I came to know him even better. His character, I believe, is above reproach. His willingness to be helpful and his leadership even as a boy was very definitely an asset to the camp. In [illegible] during his years on the mainland, he has continued on the path I knew him to follow. I am sure he will be a splendid teacher and friend to young people.\n\nVery cordially yours,\n\nHarold V. Lucas,\nGENERAL SECRETARY YMCA [Young Men's Christian Association]\n\n[illegible]",
+      "text_reading": null,
+      "description": "Harold V. Lucas writes to the president of Miami University concerning Ming Kong Chong, a student expected to graduate in 1940 and return to Hawaii to work in the public instruction department as a teacher. Lucas offers testimony about Chong's character, leadership, and willingness to help, based on having known him for eight years.",
+      "title": "Letter from Harold V. Lucas concerning a Miami University student, 24 April 1940",
+      "generated_title": null,
+      "date": "1940-04-24",
+      "contributors": [],
+      "correspondents": [],
+      "place": null,
+      "keywords": [],
+      "decade": "1940-1949"
+    },
+    "tier2": {
+      "subjects": [
+        "correspondence",
+        "college students",
+        "Miami University (Oxford, Ohio)"
+      ],
+      "genre": [
+        "letters (correspondence)"
+      ],
+      "creator": "Lucas, Harold V.",
+      "publisher": null,
+      "theme": []
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0897_Recto.jpg",
+    "processing_confidence": 0.0,
+    "model": "gpt-5.6-terra",
+    "prompt_version": "loc15_v4",
+    "schema_version": "loc15_schema_v2",
+    "image": {
+      "width": 5250,
+      "height": 6776,
+      "mime": "image/jpeg",
+      "detail": "original",
+      "payload_bytes": 1951897
+    },
+    "cost_usd": 0.420105,
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": false,
+      "errors": [
+        {
+          "field": "place",
+          "code": "evidence_place_present_missing_place",
+          "message": "Header contains a probable sender/creation place but metadata place is missing.",
+          "value": "",
+          "evidence": {
+            "fast_place": "Ohio--Oxford",
+            "line_idx": 4,
+            "raw": "Oxford, Ohio",
+            "confidence": 0.85
+          }
+        }
+      ],
+      "warnings": [],
+      "signals": {
+        "header_dates": [
+          {
+            "iso_date": "1940-04-24",
+            "precision": "day",
+            "line_idx": 1,
+            "raw": "April 24, 1940",
+            "confidence": 0.95
+          }
+        ],
+        "header_places": [
+          {
+            "fast_place": "Ohio--Oxford",
+            "line_idx": 4,
+            "raw": "Oxford, Ohio",
+            "confidence": 0.85
+          }
+        ]
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Letter from Harold V. Lucas concerning a Miami University student, 24 April 1940",
+      "normalized_title": "Letter from Harold V. Lucas concerning a Miami University student, 24 April 1940",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    }
+  }
+}
