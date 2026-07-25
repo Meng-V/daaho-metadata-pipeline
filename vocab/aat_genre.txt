@@ -1,0 +1,82 @@
+# Approved AAT (Art & Architecture Thesaurus) genre terms for the DAAHO collection.
+#
+# Every term below was verified as an AAT *preferred* label against the Getty SPARQL endpoint
+# on 2026-07-25. Re-verify after any edit:
+#
+#     python3 scripts/verify_aat_terms.py vocab/aat_genre.txt
+#
+# Rules:
+#   * Preferred labels only. An alternate label will be rejected by _enforce_approved_genre().
+#   * AAT genre terms are lowercase except proper nouns.
+#   * Keep the parenthetical qualifier -- "letters (correspondence)" and "letters" are different
+#     things in AAT, and only the qualified form is the preferred label.
+#   * Lines beginning with # are ignored by app/main.py _load_controlled_list().
+#
+# The trailing aat: id in each comment is the Getty concept id, for reference when minting
+# linked-data records later.
+
+# --- Correspondence -------------------------------------------------------------------------
+correspondence                          # aat:300026877
+letters (correspondence)                # aat:300026879
+telegrams                               # aat:300026909
+postcards                               # aat:300026816
+envelopes                               # aat:300197601
+memorandums                             # aat:300026906
+carbon copies                           # aat:300266791
+
+# --- News and clippings ---------------------------------------------------------------------
+clippings (information artifacts)       # aat:300026867
+newspapers                              # aat:300026656
+articles                                # aat:300048715
+editorials                              # aat:300026284
+press releases                          # aat:300026437
+
+# --- Administrative and government records --------------------------------------------------
+reports                                 # aat:300027267
+forms (documents)                       # aat:300049060
+questionnaires                          # aat:300027265
+circulars (fliers)                      # aat:300203068
+bulletins                               # aat:300311679
+minutes (administrative records)        # aat:300027440
+rosters                                 # aat:300027178
+attendance lists                        # aat:300027445
+certificates                            # aat:300026841
+
+# --- Travel and personal papers -------------------------------------------------------------
+itineraries                             # aat:300027086
+diaries                                 # aat:300027112
+notes (documents)                       # aat:300027200
+annotations                             # aat:300026100
+
+# --- Events and ephemera --------------------------------------------------------------------
+invitations                             # aat:300027083
+announcements                           # aat:300026707
+printed ephemera                        # aat:300264821
+pamphlets                               # aat:300220572
+brochures                               # aat:300248280
+broadsides (notices)                    # aat:300026739
+
+# --- Parts of publications ------------------------------------------------------------------
+prefaces                                # aat:300055032  ("forewords" is an alt label of this concept)
+essays                                  # aat:300026291
+
+# --- Physical form --------------------------------------------------------------------------
+typescripts                             # aat:300028577
+manuscripts (documents)                 # aat:300028569
+photographs                             # aat:300046300
+
+# --- Financial records ----------------------------------------------------------------------
+receipts (financial records)            # aat:300027573
+financial records                       # aat:300027473
+
+# --- Deliberately NOT included --------------------------------------------------------------
+# These were tested and rejected; do not add them back without re-verifying:
+#   forewords            -- alternate label, not preferred; use "prefaces"
+#   letters              -- unqualified form is a different AAT concept; use "letters (correspondence)"
+#   circulars            -- not a preferred label; use "circulars (fliers)"
+#   lists                -- not an AAT preferred label on its own; use "attendance lists" etc.
+#   notes                -- not preferred; use "notes (documents)"
+#   programs             -- no unqualified form in AAT; only qualified kinds (concert programs, ...)
+#   applications         -- exact preferred-label match failed; revisit if application forms appear
+#   scholarships         -- a SUBJECT, not a genre. It leaked into the Genre column of the
+#                           January 2026 CSV, which is part of why this list exists.

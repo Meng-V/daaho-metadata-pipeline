@@ -1,0 +1,98 @@
+FILENAME: {filename}
+
+Catalog this item following the DAAHO Transcription Policy and the Asian Americans at Miami Mini MAP.
+
+SCHEMA-FIRST OUTPUT:
+- Populate only schema fields.
+- Populate required keys.
+- If evidence is missing, use null/empty as allowed by schema.
+- "decade" must always be null (pipeline derives it).
+- "field_confidence" is mandatory. Score honestly; see the confidence scale in the system prompt.
+
+TRANSCRIPT CONTRACT (strict -- see the full Section 2 rules in the system prompt):
+1) Do NOT transcribe stationery letterhead. Start at the document's own content.
+2) Do NOT mimic line breaks or layout. Reflow into paragraphs separated by a blank line.
+3) Start each page with [page 1], [page 2], ... on its own line.
+4) Retain capitalization and punctuation EXACTLY as in the original.
+5) Retain misspellings as written, then bracket the correction: Sincerly [Sincerely] yours
+6) Unreadable -> [illegible]. Partially readable -> [unclear]. One marker per word.
+7) Do NOT reconstruct damaged, torn, or missing regions. Mark them and move on.
+8) Do NOT omit any region that carries text, including the page bottom and marginalia.
+9) Handwriting -> prefix [handwritten]. If not confidently legible, output [handwritten]
+   [illegible] and NOTHING else. Never offer a guessed name.
+10) Strikeouts -> [struck: words]. Underlines -> [underlined: words]. Insertions -> ^carets^.
+11) Foreign-language words and acronyms -> as written, then [gloss] or [expansion] on first use.
+
+Self-check before returning the transcript. If any of these is true, fix it:
+- Does it open with printed institutional letterhead?  -> remove it
+- Does it copy the original's line breaks?             -> reflow it
+- Does it contain zero brackets on a document that has any misspelling, abbreviation,
+  foreign-language term, or unreadable mark?           -> you are silently normalizing; re-read
+- Did you write a name or word you cannot actually see on the item?  -> replace with [illegible]
+- Is any region of the page missing from the transcript?             -> transcribe or mark it
+
+NAMES, DATES, PLACES:
+1) Where OCR and the image disagree on a spelling, follow the IMAGE.
+2) If a name or date is not confidently legible, leave the field null. Do not normalize an
+   unfamiliar name toward a familiar-looking one.
+
+TITLE + DATE CONTRACT (strict):
+1) title must be non-empty and in SENTENCE CASE (first word and proper nouns only).
+2) date must be ISO 8601 (YYYY / YYYY-MM / YYYY-MM-DD) or null.
+3) Title must end with ", {{DATE_SUFFIX}}" derived from date:
+   - YYYY-MM-DD -> D Month YYYY (no comma in suffix)
+   - YYYY-MM -> Month YYYY
+   - YYYY -> YYYY
+4) If date is null, title must end with ", undated".
+5) "undated" may appear only in the title suffix, nowhere else.
+6) Do not output ISO dates at the end of the title (for example ", 1937-10-19" is invalid).
+7) For YYYY-MM-DD dates, the year is mandatory in the title suffix.
+   Invalid: "..., 16 November"      Valid: "..., 16 November 1937"
+
+LOCATION CONTRACT (strict):
+1) place must use FAST-style State--City tokens.
+2) Record the creation/sender location first; Ohio--Oxford for Miami University documents, even
+   when established by context rather than stated on the item.
+3) If both sender and recipient locations are present, output both with a semicolon:
+   SenderState--SenderCity; RecipientState--RecipientCity
+4) Do not output "City, State" formatting.
+
+DESCRIPTION CONTRACT:
+1) Ground every claim in the transcript or visible content. Do not infer purpose, motive, funding
+   rationale, or emotional state unless the source says so directly.
+2) For newspaper clippings, summarize the target article, not page-level filler.
+
+EXAMPLES:
+Title examples (sentence case):
+- Letter to Mr. Kiyoshi Tomizawa from the president, 19 October 1937
+- Itinerary document for Upham, undated
+
+Creator examples (Last, First - no titles):
+- Upham, Alfred H.
+- Sheehan, Murray
+- Pramoj, M.R. Seni
+
+Location examples:
+- District of Columbia--Washington
+- Pennsylvania--Philadelphia; Ohio--Oxford
+
+Subject examples (FAST controlled vocabulary - lowercase except proper nouns):
+- correspondence; Miami University (Oxford, Ohio); international students
+- World War (1939-1945); college students; United States. Selective Service System
+
+Genre examples (AAT controlled vocabulary - always lowercase):
+- letters (correspondence)
+- correspondence
+- clippings (information artifacts)
+- prefaces
+
+APPROVED SUMMARY STYLE EXAMPLES:
+{summary_style_examples}
+
+OCR TEXT (reference only -- the image is authoritative; OCR errors must not be copied through):
+{ocr_text}
+
+HINTS (defaults; copy verbatim only if non-empty and schema has field):
+default.repository={known_repository}
+default.collection={known_collection}
+default.permalink={known_permalink}
