@@ -11,15 +11,15 @@ The original entry read:
 That diagnosis was a hypothesis, and it does not hold up.
 
 **Rebuild does not strip transcripts.** Tested against all 19 files of the gpt-4o baseline (`out/`)
-and against current v4 output (`out_v4b/`): zero metadata keys lost, zero top-level keys lost, zero
+and against v4 output (`out_v4b/`): zero metadata keys lost, zero top-level keys lost, zero
 context keys lost, zero transcripts emptied. `transcript` is in `TIER1_FIELDS`, so the tier policy
 preserves it, and non-tier keys such as `language` survive too.
 
 **What actually emptied those transcripts:** `out_fewshot_summary_test/` was produced by a normal
 pipeline *run* (`--out out_fewshot_summary_test --prompt-version loc15_v3_fewshot`), not by a
-rebuild — `scripts/summary_fewshot_comparison.py` only reads that directory, it never writes it. The
-v3 few-shot prompt contains **no transcript instructions at all** (see `docs/DECISIONS.md`, and the
-v4 prompt commit), and its user prompt is dominated by Summary style examples. The empty transcripts
+rebuild — the comparison script only read that directory, it never wrote it. The
+v3 few-shot prompt contained **no transcript instructions at all** (see `docs/DECISIONS.md`, and the
+v4 prompt commit; the v1 and v3 prompt files were deleted in the July 2026 cleanup), and its user prompt is dominated by Summary style examples. The empty transcripts
 came from the prompt, not from rebuild. The directory itself no longer exists locally, so the
 original artifact cannot be re-examined.
 
@@ -69,7 +69,7 @@ fails on any field that goes from populated to empty without an explicit reason.
 
 ## v4 fabricated a transcript for BC-0934, and the policy linter passed it
 
-Found 2026-07-25 in the first full v4 run (`out_v4/`, tier terra).
+Found 2026-07-25 in the first full v4 run, before the image pixel cap existed. (That run's output directory was removed in the July 2026 cleanup; the figures below are the record of it.)
 
 BC-0934 is a **clean, fully legible typed form** — verified by opening
 `SAMPLES/BC-0934_Recto.jpg` directly. It reads `OFFER OF SCHOLARSHIP FOR KOREAN STUDENT`, with

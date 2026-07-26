@@ -27,6 +27,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.cost import TIERS  # noqa: E402
+# Item grouping lives in one place. This script used to duplicate parse_name(), and the copy fell
+# behind when letter-suffixed accession numbers (AAMU-0073a) were fixed -- it reported 130 items
+# against the pipeline's 128.
+from app.grouping import parse_name  # noqa: E402
 from app.ocr import MAX_PIXELS  # noqa: E402
 
 from PIL import Image  # noqa: E402
@@ -35,25 +39,6 @@ from PIL import Image  # noqa: E402
 # 15 MP cap and the OCR fallback off.
 PILOT_INPUT_TOKENS = 19_478
 PILOT_OUTPUT_TOKENS = 2_125
-
-# Sequence-numbered pages of a bound volume: 04_AAMU-0069_Page_1.jpg
-SEQ_VOLUME = re.compile(r"^(\d+)_([A-Z]+-\d+)_(.+)$")
-# Item plus a page/side label: AAMU-0003_Page_12.jpg, AAMU-0001_Recto.jpg, BC-0692_Recto.jpg
-ITEM_LABEL = re.compile(r"^([A-Z]+-\d+)_(.+)$")
-
-
-def parse_name(stem: str):
-    """Return (item_id, label, sequence) inferred from the filename."""
-    match = SEQ_VOLUME.match(stem)
-    if match:
-        return match.group(2), match.group(3), int(match.group(1))
-    match = ITEM_LABEL.match(stem)
-    if match:
-        label = match.group(2)
-        page = re.match(r"Page[_ ](\d+)$", label, re.IGNORECASE)
-        return match.group(1), label, int(page.group(1)) if page else None
-    return stem, "", None
-
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

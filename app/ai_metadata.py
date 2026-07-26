@@ -28,7 +28,7 @@ class ExtractionFailed(RuntimeError):
     """
 
 
-PROMPT_VERSION = "loc15_v2"
+PROMPT_VERSION = "loc15_v4"
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 _CACHED_PROMPTS: Dict[str, Tuple[str, str]] = {}
 

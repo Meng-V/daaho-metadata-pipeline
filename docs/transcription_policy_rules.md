@@ -30,7 +30,11 @@ acceptance criterion. See `tests/fixtures/jinming_review_2026-04.json`.
 `AUTO` = decidable by a deterministic checker. `PROMPT` = must be instructed, verified by sampling.
 `BLOCKED` = cannot be represented in the current schema.
 
-| # | Policy rule (§2) | Check | Current state |
+The "April 2026 state" column records compliance **before** the v4 prompt existed — it is the
+evidence that motivated the rewrite, not a description of today. Current compliance is 0 policy
+errors; run `scripts/policy_lint.py` for the live figure.
+
+| # | Policy rule (§2) | Check | April 2026 state |
 |---|---|---|---|
 | R1 | Do not transcribe stationery **letterhead** | AUTO | ❌ violated — BC-0926 opens `ADDRESS OFFICIAL COMMUNICATIONS TO / THE SECRETARY OF STATE / WASHINGTON 25, D.C.`; BC-0708 opens `Federal Security Agency / NATIONAL YOUTH ADMINISTRATION FOR OHIO / Hoster Bldg.` |
 | R2 | Do not mimic **line breaks**; do not retain original layout | AUTO | ❌ violated — 28 newlines per transcript on average, layout copied verbatim |
@@ -51,15 +55,17 @@ acceptance criterion. See `tests/fixtures/jinming_review_2026-04.json`.
 | R17 | **Redactions** → `[redacted]`; closed sections → `[this section closed]` | AUTO | ⚠️ untested |
 | R18 | Turn **auto-correct off** | PROMPT | ❌ this is R5's failure mode — the model behaves as an autocorrecting copy editor |
 
-**Score against the current 18 transcripts: essentially zero of the checkable rules are
+**Score against the April 2026 output (18 transcripts): essentially zero of the checkable rules were
 implemented.** Root cause is already identified: `prompts/loc15_v2_system.txt` and
-`loc15_v3_fewshot_system.txt` contain **no transcript instructions at all** — a regression from
-`loc15_v1_system.txt`, which did have them.
+`loc15_v3_fewshot_system.txt` contained **no transcript instructions at all** — a regression from
+`loc15_v1_system.txt`, which did have them. Those two prompt versions were deleted in the July 2026
+cleanup; `loc15_v2_*` is kept because the committed `out/` baseline was produced with it and the
+claims above are checkable against it.
 
 ## Use §6 as the few-shot example
 
-Policy §6 supplies a complete worked example transcript, and it is a better few-shot than what
-v3 currently uses:
+Policy §6 supplies a complete worked example transcript, and it was a better few-shot than what the
+v3 prompt used:
 
 - Same era and genre as this collection — a 19 March 1938 travel letter, `Dear Miss Marshall`
 - Demonstrates `[page 1]`
@@ -67,7 +73,8 @@ v3 currently uses:
 - Demonstrates consecutive `[illegible] [illegible]`
 - Demonstrates flowing paragraphs with **no line-break mimicry** (R2)
 
-It is the project's own authoritative example. Copy it into the v4 prompt verbatim.
+It is the project's own authoritative example, and it is what `prompts/loc15_v4_system.txt` now
+carries verbatim.
 
 ## Resolved
 
