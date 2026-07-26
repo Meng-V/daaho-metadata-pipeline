@@ -15,12 +15,16 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+# An item number may carry a letter suffix: AAMU-0073a..AAMU-0073e are five distinct items under
+# one accession number. Without the optional suffix these split into one record per page.
+ITEM_NUMBER = r"[A-Za-z]+-\d+[a-z]?"
 # 01_AAMU-0069_Front_cover.jpg -> sequence 01, item AAMU-0069, label Front_cover
-SEQ_VOLUME = re.compile(r"^(\d+)_([A-Za-z]+-\d+)_(.+)$")
-# AAMU-0003_Page_12.jpg / AAMU-0001_Recto.jpg -> item, label
-ITEM_LABEL = re.compile(r"^([A-Za-z]+-\d+)_(.+)$")
-# Tolerates the stray space in AAMU-0093_Page_ 8.jpg
-PAGE_NUMBER = re.compile(r"^Page[_\s]*(\d+)$", re.IGNORECASE)
+SEQ_VOLUME = re.compile(rf"^(\d+)_({ITEM_NUMBER})_(.+)$")
+# AAMU-0003_Page_12.jpg / AAMU-0001_Recto.jpg / AAMU-0073a_Page_2.jpg -> item, label
+ITEM_LABEL = re.compile(rf"^({ITEM_NUMBER})_(.+)$")
+# Tolerates the stray space in AAMU-0093_Page_ 8.jpg and page ranges like Page_2-3, where one
+# image captures a two-page spread. Ranges sort by their first page.
+PAGE_NUMBER = re.compile(r"^Page[_\s]*(\d+)(?:\s*[-–]\s*\d+)?$", re.IGNORECASE)
 
 # Front matter and back matter sort around the numbered pages.
 FRONT_MATTER = ["front_cover", "inside_front_cover", "title_page", "table_of_contents", "contents"]

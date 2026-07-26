@@ -203,6 +203,56 @@ class VocabReviewFlagTests(unittest.TestCase):
             self.assertTrue(any("affirmative action" in n for n in record["vocab_notes"]))
 
 
+class ConcurrentCostAttributionTests(unittest.TestCase):
+    """Per-item cost must come from that item's own records, not a global running total."""
+
+    def test_total_for_isolates_items(self):
+        from app.cost import CostLedger, record_from_usage
+
+        ledger = CostLedger(None)
+        usage = {"prompt_tokens": 20000, "completion_tokens": 2000,
+                 "prompt_tokens_details": {"cached_tokens": 0}}
+        ledger.add(record_from_usage("ITEM-A", "extraction", "gpt-5.6-terra", usage))
+        # Another worker finishes in the middle of A's window.
+        ledger.add(record_from_usage("ITEM-B", "extraction", "gpt-5.6-terra", usage))
+        ledger.add(record_from_usage("ITEM-B", "extraction", "gpt-5.6-terra", usage))
+
+        self.assertAlmostEqual(ledger.total_for("ITEM-A"), 0.08, places=4)
+        self.assertAlmostEqual(ledger.total_for("ITEM-B"), 0.16, places=4)
+        self.assertAlmostEqual(ledger.total, 0.24, places=4)
+        self.assertNotAlmostEqual(ledger.total_for("ITEM-A"), ledger.total, places=4,
+                                  msg="a global delta would have charged A for B's work")
+
+    def test_recorded_item_cost_excludes_other_items(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            from app.cost import CostLedger, record_from_usage
+
+            ledger = CostLedger(None)
+            manifest = RunManifest(None)
+            usage = {"prompt_tokens": 20000, "completion_tokens": 2000,
+                     "prompt_tokens_details": {"cached_tokens": 0}}
+            # Simulate a concurrent worker having already billed a large amount.
+            for _ in range(5):
+                ledger.add(record_from_usage("OTHER", "extraction", "gpt-5.6-terra", usage))
+
+            with mock.patch.object(app_main, "tesseract_ocr", return_value=("", 0.0)), \
+                 mock.patch.object(app_main, "image_bytes", return_value=(b"\xff\xd8fake", "image/jpeg")), \
+                 mock.patch.object(app_main, "image_dimensions", return_value=(3400, 4400)), \
+                 mock.patch.object(app_main, "sent_dimensions", return_value=(3400, 4400)), \
+                 mock.patch.object(app_main, "extract_metadata", return_value={"title": "T, undated"}):
+                app_main.process_item(
+                    paths=[__file__], item_id="MINE", out_dir=tmp,
+                    collection="", repository="", permalink="", model="gpt-5.6-terra",
+                    approved_places=set(), approved_subjects=set(), approved_genre=set(),
+                    online_vocab_advisory=False, ocr_fallback=False,
+                    ledger=ledger, manifest=manifest,
+                )
+            envelope = json.loads((Path(tmp) / "MINE.loc15.json").read_text())
+            # extract_metadata is mocked, so no billable call is recorded for MINE.
+            self.assertEqual(envelope["context"]["cost_usd"], 0.0)
+            self.assertEqual(manifest.records[0]["cost_usd"], 0.0)
+
+
 class RetryPolicyTests(unittest.TestCase):
     def test_transient_errors_retry_and_permanent_ones_do_not(self):
         class ApiError(Exception):

@@ -230,6 +230,17 @@ class CostLedger:
         with self._lock:
             return round(sum(r.cost_total for r in self.records), 6)
 
+    def total_for(self, item_id: str) -> float:
+        """Cost attributable to one item.
+
+        Never derive a per-item cost by differencing `total` around the work: with concurrent
+        workers that delta includes whatever other items happened to finish in the window, which
+        inflated the printed figures on the first batch run (BC-0697 showed $0.6362 against an
+        actual $0.0905).
+        """
+        with self._lock:
+            return round(sum(r.cost_total for r in self.records if r.item_id == item_id), 6)
+
     def summary_line(self) -> str:
         with self._lock:
             billable = [r for r in self.records if r.tier != "free"]

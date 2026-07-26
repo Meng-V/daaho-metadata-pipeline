@@ -733,7 +733,6 @@ def process_item(
         mode=summary_fewshot_mode,
     )
     detail = default_detail(model)
-    item_cost_start = ledger.total if ledger else 0.0
 
     # Local OCR across every page, concatenated. Free, and a no-op when pytesseract is absent.
     ocr_parts, confidences = [], []
@@ -808,7 +807,7 @@ def process_item(
                     prompt_version=prompt_version, detail=detail,
                     note="failed attempt" if index else "failed",
                 ))
-        spent = (ledger.total - item_cost_start) if ledger else 0.0
+        spent = ledger.total_for(item_id) if ledger else 0.0
         os.makedirs(out_dir, exist_ok=True)
         (Path(out_dir) / f"{item_id}.failed.json").write_text(
             json.dumps({
@@ -900,7 +899,7 @@ def process_item(
     if missing_pages:
         context["missing_pages"] = missing_pages
     if ledger:
-        context["cost_usd"] = round(ledger.total - item_cost_start, 6)
+        context["cost_usd"] = ledger.total_for(item_id)
     if summary_example_ids:
         context["summary_fewshot"] = {
             "mode": summary_fewshot_mode,
@@ -954,7 +953,7 @@ def process_item(
     if stale_failure.exists():
         stale_failure.unlink()
 
-    spent = (ledger.total - item_cost_start) if ledger else 0.0
+    spent = ledger.total_for(item_id) if ledger else 0.0
     print(f" Done. (${spent:.4f})" if ledger else " Done.")
     if manifest:
         confidence = (md.get("field_confidence") or {}).get("transcript")

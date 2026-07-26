@@ -56,6 +56,30 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual(ordered[0], "01_AAMU-0069_Front_cover.jpg")
         self.assertEqual(ordered[-1], "38_AAMU-0069_Back_cover.jpg")
 
+    def test_letter_suffixed_item_numbers_group(self):
+        """AAMU-0073a..e are five distinct items under one accession number."""
+        files = [
+            "AAMU-0073a_Page_1.jpg", "AAMU-0073a_Page_2.jpg",
+            "AAMU-0073b_Page_1.jpg", "AAMU-0073b_Page_2-3.jpg",
+            "AAMU-0073c_Recto.jpg",
+        ]
+        groups = group_items(files)
+        self.assertEqual(sorted(groups), ["AAMU-0073a", "AAMU-0073b", "AAMU-0073c"])
+        self.assertEqual(len(groups["AAMU-0073a"]), 2, "both pages belong to one item")
+        self.assertEqual([p.name for p in groups["AAMU-0073b"]],
+                         ["AAMU-0073b_Page_1.jpg", "AAMU-0073b_Page_2-3.jpg"])
+
+    def test_page_range_sorts_by_first_page(self):
+        """One image can capture a two-page spread: Page_2-3."""
+        files = ["AAMU-0073b_Page_4.jpg", "AAMU-0073b_Page_2-3.jpg", "AAMU-0073b_Page_1.jpg"]
+        ordered = [p.name for p in group_items(files)["AAMU-0073b"]]
+        self.assertEqual(ordered, ["AAMU-0073b_Page_1.jpg", "AAMU-0073b_Page_2-3.jpg",
+                                   "AAMU-0073b_Page_4.jpg"])
+
+    def test_letter_suffix_does_not_swallow_the_base_item(self):
+        groups = group_items(["AAMU-0073_Page_1.jpg", "AAMU-0073a_Page_1.jpg"])
+        self.assertEqual(sorted(groups), ["AAMU-0073", "AAMU-0073a"])
+
     def test_different_items_stay_separate(self):
         groups = group_items(["AAMU-0001_Recto.jpg", "AAMU-0002_Recto.jpg", "BC-0692_Recto.jpg"])
         self.assertEqual(sorted(groups), ["AAMU-0001", "AAMU-0002", "BC-0692"])
