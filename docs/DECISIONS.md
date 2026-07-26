@@ -486,6 +486,44 @@ and an award recipient on a form (`Rose Choi` — also misspelled; the image rea
 those are parties to a correspondence. They now go to `contributors` where they belong, or are
 omitted where they name no person.
 
+### D-013 — Handwritten items route to the `sol` tier; the refusal-to-guess rule stays
+
+**Decided:** 2026-07-26 by Meng Qu (project lead)
+**Status:** active
+
+All 15 low-confidence records in the batch turned out to be **handwritten**. Their transcripts were
+mostly `[handwritten] [illegible]`: AAMU-0014 produced 265 characters from six written pages,
+AAMU-0073a 339 from two.
+
+**A hypothesis that turned out to be wrong.** The first theory was that v4's rule 18 — *"DO NOT GUESS
+AT HANDWRITTEN NAMES OR WORDS ... output [handwritten] [illegible] and nothing else"* — was
+over-suppressing, and that the model could read the cursive if allowed to try. A v5 prompt relaxed
+the rule, separating "do not invent what you cannot see" from "do not attempt cursive".
+
+It made things worse. On AAMU-0073a, v5 produced 1,202 characters instead of 339 — and **invented
+them**: `SEP 19 1930` for a stamp reading 1950, and `During the Christmas holidays I spent the week
+at home` for a sentence that reads `on the coming home-coming day`. Pushed to try harder at a tier
+that cannot read the script, the model fills the gap with plausible prose. **v4's refusal was
+correct**, and v5 was deleted.
+
+**The binding constraint is model capability, not the prompt.** The same item on `sol` with the
+unchanged v4 prompt produced 2,323 characters of accurate text — verified line by line against the
+image, including `I am a Miami graduate of Class of '28`, `the Institute of Public Administration in
+N.Y.C.`, and the names `Dr. Shideler, Mr. A.K. Morris`.
+
+Re-running all 15 on `sol`: **confidence rose on 15 of 15**, and the human-review queue fell from 15
+items to 10. AAMU-0014 went from 265 characters to 5,477, spot-checked word-for-word against the
+image — real content, with `[unclear]` correctly flagging only the Dutch ship name it could not
+resolve. Cost $4.53 against $2.04 at `terra`.
+
+This is the tiering from D-009 working as designed: the expensive tier is worth it on the minority of
+items that need it, not on the batch. Run handwritten material on `sol` from the start.
+
+**What this does not change:** per D-003, the transcription policy still says handwritten documents
+should be transcribed manually. `sol` makes the AI transcript a much better *starting point* for that
+work; it does not make it a finished transcript. All 10 remaining low-confidence items, and
+AAMU-0074 (30) in particular, still need human eyes.
+
 ### Payload fix made at the same time
 
 `app/ocr.py` `pil_bytes()` re-encoded every image to full-resolution PNG, turning a 3.0 MB JPEG
