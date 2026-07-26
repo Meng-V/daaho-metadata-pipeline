@@ -44,6 +44,14 @@ those staying empty.
 proofread by a person before finalization, and most of these haven't been. I'd treat the whole batch
 as staging rather than final metadata.
 
+**We've also changed models.** The earlier metadata came from GPT-4o, which shrinks large images
+before reading them — our scans were being reduced to roughly a fifth of their resolution, which is
+where a lot of the misread names and dates came from. This batch uses OpenAI's current generation,
+which reads the scans at full size. To keep the cost down it runs in three tiers by how hard the
+material is: **gpt-5.6-luna** for straightforward pages, **gpt-5.6-terra** for ordinary ones, and
+**gpt-5.6-sol** for difficult ones, so we only pay the premium where it earns it. This batch ran on
+terra, with the 15 handwritten items re-run on sol; luna wasn't needed.
+
 Two things that will look unfamiliar, both deliberate: transcripts keep the original misspelling with
 the correction in brackets (`Sincerly [Sincerely] yours`) rather than silently fixing it, and
 personal names are inverted without honorifics (`Sheehan, Murray`). The earlier output did neither.
