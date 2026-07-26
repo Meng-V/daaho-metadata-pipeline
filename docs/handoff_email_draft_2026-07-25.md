@@ -1,7 +1,10 @@
 # Draft handoff email — DAAHO AI metadata batch
 
 **Not sent.** Edit the greeting and sign-off, then send it yourself.
-Attach: `out_batch/metadata_upload_2026-07-25.csv`
+Attach:
+- `out_batch/metadata_upload_2026-07-25.csv` — the metadata
+- `out_batch/cost_per_item.csv` — what each record cost
+- `out_batch/cost_summary.csv` — cost totals
 
 ---
 
@@ -45,8 +48,12 @@ Two things that will look unfamiliar, both deliberate: transcripts keep the orig
 the correction in brackets (`Sincerly [Sincerely] yours`) rather than silently fixing it, and
 personal names are inverted without honorifics (`Sheehan, Murray`). The earlier output did neither.
 
-Everything is in the project repo if you need the detail — the per-record JSON has confidence scores
-and processing notes behind every value in the spreadsheet.
+Two cost files are attached as well: one row per record, and a summary. Short version — the 128
+records cost $28.38, averaging $0.22 each; $34.25 was spent in total once the pilot runs and the
+diagnostic work are counted.
+
+Everything else is in the project repo — the per-record JSON has confidence scores and processing
+notes behind every value in the spreadsheet.
 
 Best,
 Meng
