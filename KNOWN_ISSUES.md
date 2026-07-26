@@ -1,11 +1,42 @@
 # Known Issues
 
-## Few-shot rebuild strips transcript field
+## RESOLVED (2026-07-25) — "Few-shot rebuild strips transcript field" was misattributed; the real bug was Tier 3
 
-- Observed: all 19 `out_fewshot_summary_test/*.loc15.json` files have empty `metadata.transcript`; `metadata.language` and other non-Summary fields are also often blank or changed. Baseline `out/*.loc15.json` has transcripts populated for 18 of 19 files.
-- Suspected cause: `--rebuild-from-existing` dispatches from `main()` lines 775-785 into `rebuild_existing_outputs()` lines 405-493 in `app/main.py`. That function sets `md = raw.get("metadata", raw)`, reapplies policy, then writes a fresh `envelope = {"metadata": md, "metadata_tiers": ..., "field_provenance": ..., "context": ...}`; it does not merge back any top-level or tier fields not explicitly reconstructed.
-- Why it matters: this blocks future use of `out_fewshot_summary_test/` as a metadata source and could silently strip transcripts on any future rebuild against any output set.
-- Recommended fix: make the rebuild path start from the existing envelope and update only the fields it intentionally rewrites. Preserve all existing `metadata` keys, top-level keys, tiers, provenance, and context entries unless the rebuild step explicitly replaces them.
+The original entry read:
+
+> Observed: all 19 `out_fewshot_summary_test/*.loc15.json` files have empty `metadata.transcript` […]
+> **Suspected cause:** `--rebuild-from-existing` […] does not merge back any top-level or tier fields
+> not explicitly reconstructed.
+
+That diagnosis was a hypothesis, and it does not hold up.
+
+**Rebuild does not strip transcripts.** Tested against all 19 files of the gpt-4o baseline (`out/`)
+and against current v4 output (`out_v4b/`): zero metadata keys lost, zero top-level keys lost, zero
+context keys lost, zero transcripts emptied. `transcript` is in `TIER1_FIELDS`, so the tier policy
+preserves it, and non-tier keys such as `language` survive too.
+
+**What actually emptied those transcripts:** `out_fewshot_summary_test/` was produced by a normal
+pipeline *run* (`--out out_fewshot_summary_test --prompt-version loc15_v3_fewshot`), not by a
+rebuild — `scripts/summary_fewshot_comparison.py` only reads that directory, it never writes it. The
+v3 few-shot prompt contains **no transcript instructions at all** (see `docs/DECISIONS.md`, and the
+v4 prompt commit), and its user prompt is dominated by Summary style examples. The empty transcripts
+came from the prompt, not from rebuild. The directory itself no longer exists locally, so the
+original artifact cannot be re-examined.
+
+**The real bug, found while testing the reported one:** rebuild silently **wiped Tier 3**.
+`apply_tier_policy()` clears any Tier 3 field lacking an explicit default — correct for a fresh
+extraction, where archival placement must never be inferred, but destructive on a rebuild. Injecting
+`box: "Box 12", folder: "Folder 3", identifier: "BC-0692", repository: "Miami University Libraries"`
+and rebuilding returned all four as `null`.
+
+This blocked the intended workflow exactly: expand the controlled vocabularies from the first real
+batch, then rebuild to re-apply them — which would have destroyed any archival placement recorded in
+the meantime.
+
+Fixed: `rebuild_existing_outputs()` carries existing Tier 3 values forward as defaults, so an
+explicit CLI flag still overrides them and an absent value is still never invented. The rebuild
+records `Preserved existing Tier 3 values on rebuild: …` in `policy_notes`. Pinned by
+`tests/test_rebuild.py`, including that repeated rebuilds are stable.
 
 ## Jan → Apr 2026 pipeline regressions: data present in January is missing today
 

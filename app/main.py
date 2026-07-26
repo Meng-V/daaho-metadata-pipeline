@@ -44,7 +44,7 @@ from .ocr import (
     tesseract_available,
     tesseract_ocr,
 )
-from .schema import LOC15_SCHEMA, SCHEMA_VERSION
+from .schema import LOC15_SCHEMA, SCHEMA_VERSION, TIER3_DEFAULTABLE_FIELDS
 from .validation_core import validate_core
 
 try:
@@ -591,7 +591,26 @@ def rebuild_existing_outputs(
         normalized_title, title_notes, title_changed = derive_normalized_title(raw_title, md.get("date"))
         if title_changed and normalized_title:
             md["title"] = normalized_title
-        md, metadata_tiers, field_provenance, policy_notes = apply_tier_policy(md, defaults=defaults)
+
+        # Tier 3 holds archival placement (box, folder, identifier, repository ...). The tier policy
+        # clears any Tier 3 field for which no explicit default is supplied, which is right for a
+        # fresh extraction -- it must never be inferred -- but destructive on a rebuild: values
+        # already recorded would be silently wiped unless every flag were re-passed. Carry existing
+        # values forward, and let an explicit CLI default override them.
+        rebuild_defaults = dict(defaults)
+        preserved: List[str] = []
+        for field in TIER3_DEFAULTABLE_FIELDS:
+            if rebuild_defaults.get(field) in (None, ""):
+                existing = md.get(field)
+                if existing not in (None, "", [], {}):
+                    rebuild_defaults[field] = existing
+                    preserved.append(field)
+
+        md, metadata_tiers, field_provenance, policy_notes = apply_tier_policy(md, defaults=rebuild_defaults)
+        if preserved:
+            policy_notes = policy_notes + [
+                "Preserved existing Tier 3 values on rebuild: " + ", ".join(sorted(preserved))
+            ]
         subject_notes = _enforce_approved_subjects(md, approved_subjects)
         if subject_notes:
             policy_notes = policy_notes + subject_notes
