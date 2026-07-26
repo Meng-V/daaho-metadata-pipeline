@@ -261,8 +261,29 @@ def transcribe_with_model(
     text = (resp.choices[0].message.content or "").strip()
     return text[:max_chars], getattr(resp, "usage", None)
 
+def _page_manifest_note(page_labels: List[str]) -> str:
+    """Tell the model how many images it is looking at and what to call each one.
+
+    Sent as a separate text part rather than folded into the prompt template, so multi-page support
+    works with every prompt version without changing their .format() placeholders.
+    """
+    listing = "\n".join(f"  Image {i}: {label}" for i, label in enumerate(page_labels, start=1))
+    return (
+        f"THIS ITEM CONSISTS OF {len(page_labels)} IMAGES, supplied below in order:\n"
+        f"{listing}\n\n"
+        "They are pages or sides of ONE archival item and must produce ONE metadata record.\n"
+        "- Transcribe every image, in this order, each opening with its own [page N] marker on its\n"
+        "  own line, where N is the image number above.\n"
+        "- Do not emit a separate title, date, or creator per page. Describe the item as a whole:\n"
+        "  take the date and signature from whichever page carries them, and note in the\n"
+        "  description if pages carry distinct content.\n"
+        "- A blank or near-blank side still gets its [page N] marker, followed by [illegible] only\n"
+        "  if it has unreadable marks. If it is genuinely blank, write [blank]."
+    )
+
+
 def extract_metadata(
-    img_bytes: bytes,
+    images: List[Tuple[bytes, str]],
     ocr_text: str,
     filename: str,
     model: str = DEFAULT_MODEL,
@@ -271,16 +292,22 @@ def extract_metadata(
     known_permalink: str = "",
     prompt_version: str = PROMPT_VERSION,
     summary_style_examples: str = "",
-    mime: str = "image/png",
     detail: str = "",
     reasoning_effort: str = "",
     usage_sink: Optional[List[Any]] = None,
+    page_labels: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
-    """Extract LOC15 metadata. Appends every attempt's usage payload to usage_sink if given,
-    so failed and retried attempts are still billed accurately."""
+    """Extract one LOC15 metadata record from one or more images of a single archival item.
+
+    `images` is an ordered list of (bytes, mime) -- pages or sides of the same item. Appends every
+    attempt's usage payload to usage_sink if given, so failed and retried attempts are still billed
+    accurately.
+    """
     client = _get_client()
     detail = detail or default_detail(model)
     ocr_text = (ocr_text or "").strip()[:MAX_OCR_CHARS]
+    if not images:
+        raise ExtractionFailed("no images supplied")
 
     system_prompt, user_prompt_template = _get_prompts(prompt_version)
     user_prompt = user_prompt_template.format(
@@ -291,10 +318,12 @@ def extract_metadata(
         known_permalink=known_permalink or "",
         summary_style_examples=summary_style_examples or "No approved summary style examples supplied.",
     )
-    content: List[Dict[str, Any]] = [
-        {"type": "text", "text": user_prompt},
-        _image_part(img_bytes, mime, detail),
-    ]
+    content: List[Dict[str, Any]] = [{"type": "text", "text": user_prompt}]
+    if len(images) > 1:
+        labels = page_labels or [f"image {i}" for i in range(1, len(images) + 1)]
+        content.append({"type": "text", "text": _page_manifest_note(labels)})
+    for img_bytes, mime in images:
+        content.append(_image_part(img_bytes, mime, detail))
 
     last_error: Optional[str] = None
     for attempt in range(MAX_ATTEMPTS):

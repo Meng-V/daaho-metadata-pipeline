@@ -7,7 +7,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from difflib import get_close_matches
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from .ai_metadata import (
     PROMPT_VERSION,
@@ -27,6 +27,12 @@ from .cost import (
 )
 from .derivations import apply_derivations, derive_normalized_title
 from .evidence_qc import run_evidence_qc
+from .grouping import (
+    DEFAULT_MAX_PAGES_PER_CALL,
+    chunk_pages,
+    group_items,
+    page_label,
+)
 try:
     from .gdrive import pull_files_from_folder
 except ImportError:
@@ -52,6 +58,60 @@ try:
     from jsonschema import Draft7Validator
 except Exception:
     Draft7Validator = None
+
+
+def _merge_chunk_metadata(chunks: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], List[str]]:
+    """Combine per-chunk metadata for an item too large to send in one request.
+
+    Transcripts concatenate in page order -- the [page N] markers carry the sequence. Descriptive
+    scalars come from the FIRST chunk, which holds the cover, title page and letterhead, i.e. the
+    pages that actually establish title, date and creator. Scalars the first chunk left null are
+    filled from later chunks, since a date can appear on a signature page. List fields union across
+    chunks. Confidence is taken as the minimum, because an item is only as trustworthy as its worst
+    page.
+    """
+    notes: List[str] = []
+    if not chunks:
+        return {}, notes
+    if len(chunks) == 1:
+        return chunks[0], notes
+
+    merged: Dict[str, Any] = {}
+    transcripts = [c.get("transcript") for c in chunks if (c.get("transcript") or "").strip()]
+
+    keys = {k for chunk in chunks for k in chunk}
+    for key in keys:
+        values = [chunk.get(key) for chunk in chunks]
+        if key == "transcript":
+            merged[key] = "\n\n".join(t.strip() for t in transcripts) or None
+            continue
+        if key == "field_confidence":
+            scores: Dict[str, Any] = {}
+            for value in values:
+                for field, score in (value or {}).items():
+                    if isinstance(score, int):
+                        scores[field] = min(score, scores[field]) if isinstance(scores.get(field), int) else score
+                    else:
+                        scores.setdefault(field, None)
+            merged[key] = scores or None
+            continue
+        if any(isinstance(v, list) for v in values):
+            union: List[Any] = []
+            for value in values:
+                for entry in (value or []):
+                    if entry not in union:
+                        union.append(entry)
+            merged[key] = union or None
+            continue
+        # Scalars: first non-null wins, first chunk first.
+        merged[key] = next((v for v in values if v not in (None, "")), None)
+
+    notes.append(
+        f"Item spanned {len(chunks)} API calls because it exceeds the per-request page limit; "
+        f"metadata merged (scalars from the earliest page carrying a value, lists unioned, "
+        f"confidence minimized)."
+    )
+    return merged, notes
 
 
 class RunManifest:
@@ -585,8 +645,8 @@ def rebuild_existing_outputs(
         print(f"Rebuilt {json_file.name}")
 
 
-def process_path(
-    path: str,
+def process_item(
+    paths: List[str],
     out_dir: str,
     collection: str,
     repository: str,
@@ -607,28 +667,47 @@ def process_path(
     reasoning_effort: str = "",
     ocr_fallback: bool = True,
     manifest: Optional[RunManifest] = None,
+    item_id: str = "",
+    max_pages_per_call: int = DEFAULT_MAX_PAGES_PER_CALL,
 ) -> str:
-    """Process one item. Returns a status: ok | skipped | missing | failed.
+    """Produce ONE metadata record from all images of ONE archival item.
 
-    On extraction failure NOTHING is written to output_path, so a resume retries the item instead
-    of skipping a hole. A sibling .failed.json records the reason.
+    `paths` is the item's pages in reading order. A single-file item is just the one-element case.
+    Items larger than max_pages_per_call are split across requests and merged, because sending 36
+    pages at ~15,000 image tokens each would cross into long-context pricing and cost more than
+    processing them separately.
+
+    Returns a status: ok | skipped | missing | failed. On failure NOTHING is written to
+    output_path, so a resume retries the item instead of skipping a hole; a sibling .failed.json
+    records the reason.
     """
-    item_path = Path(path)
-    if not item_path.exists():
-        print(f"Skip missing: {item_path}")
+    page_paths = [Path(p) for p in paths]
+    present = [p for p in page_paths if p.exists()]
+    item_id = item_id or (_normalize_item_id(page_paths[0].name) if page_paths else "")
+    if not present:
+        print(f"Skip missing: {', '.join(str(p) for p in page_paths) or '(no paths)'}")
         if manifest:
-            manifest.add(_normalize_item_id(item_path.name), "missing", path=str(item_path))
+            manifest.add(item_id, "missing", paths=[str(p) for p in page_paths])
         return "missing"
+    missing_pages = [p.name for p in page_paths if not p.exists()]
 
-    output_path = Path(out_dir) / f"{item_path.stem}{output_ext}"
-    if output_path.exists() and not overwrite:
-        print(f"Skipping {item_path.name} (already processed)")
+    output_path = Path(out_dir) / f"{item_id}{output_ext}"
+    label = item_id if len(present) == 1 else f"{item_id} ({len(present)} pages)"
+    # Runs before item grouping named their output after the FILE stem, so a single-page item
+    # landed at e.g. BC-0692_Recto.loc15.json rather than BC-0692.loc15.json. Honor the legacy name
+    # when deciding whether work is already done, or a resume would re-bill the whole pilot set.
+    existing = [output_path] + [
+        Path(out_dir) / f"{page.stem}{output_ext}" for page in present if page.stem != item_id
+    ]
+    already = next((p for p in existing if p.exists()), None)
+    if already and not overwrite:
+        suffix = "" if already == output_path else f" [legacy name {already.name}]"
+        print(f"Skipping {label} (already processed){suffix}")
         if manifest:
-            manifest.add(_normalize_item_id(item_path.name), "skipped")
+            manifest.add(item_id, "skipped", output=already.name)
         return "skipped"
 
-    print(f"Processing {item_path.name}...", end="", flush=True)
-    item_id = _normalize_item_id(item_path.name)
+    print(f"Processing {label}...", end="", flush=True)
     summary_style_examples, summary_example_ids = _format_summary_examples(
         item_id=item_id,
         examples=summary_examples or {},
@@ -637,27 +716,39 @@ def process_path(
     detail = default_detail(model)
     item_cost_start = ledger.total if ledger else 0.0
 
-    text, conf = tesseract_ocr(str(item_path))
+    # Local OCR across every page, concatenated. Free, and a no-op when pytesseract is absent.
+    ocr_parts, confidences = [], []
+    for page in present:
+        page_text, page_conf = tesseract_ocr(str(page))
+        if page_text.strip():
+            ocr_parts.append(page_text)
+        confidences.append(page_conf)
+    text = "\n\n".join(ocr_parts)
+    conf = max(confidences) if confidences else 0.0
     if ledger:
         # Record honestly whether local OCR actually ran. pytesseract being absent silently turns
         # tesseract_ocr() into a no-op, which is what made the billable fallback fire on every
         # item in the first full run -- see docs/DECISIONS.md D-009b.
         if tesseract_available():
-            note = f"local OCR, no API cost ({len(text.strip())} chars)"
+            note = f"local OCR over {len(present)} page(s), no API cost ({len(text.strip())} chars)"
         else:
             note = "SKIPPED: pytesseract not installed, so local OCR did not run"
         ledger.add(free_record(item_id, "tesseract", note=note))
-    img_bytes, mime = image_bytes(str(item_path))
+
+    images = [image_bytes(str(page)) for page in present]
+    labels = [page_label(page) for page in present]
+
     if ocr_fallback and len(text.strip()) < 25:
         try:
             model_text, ocr_usage = transcribe_with_model(
-                img_bytes, model=model, mime=mime, detail=detail, reasoning_effort=reasoning_effort
+                images[0][0], model=model, mime=images[0][1], detail=detail,
+                reasoning_effort=reasoning_effort,
             )
             if ledger:
                 ledger.add(record_from_usage(
                     item_id, "ocr_fallback", model, ocr_usage,
                     prompt_version=prompt_version, detail=detail,
-                    note="Tesseract returned under 25 chars",
+                    note="Tesseract returned under 25 chars (first page only)",
                 ))
             if len(model_text) > len(text):
                 text = model_text
@@ -665,23 +756,29 @@ def process_path(
         except Exception:
             pass
 
+    page_chunks = chunk_pages(present, max_pages_per_call)
+    index_chunks = chunk_pages(list(range(len(present))), max_pages_per_call)
     usage_sink: List[Any] = []
+    chunk_results: List[Dict[str, Any]] = []
     try:
-        md = extract_metadata(
-            img_bytes,
-            text,
-            filename=item_path.name,
-            model=model,
-            known_collection=collection,
-            known_repository=repository,
-            known_permalink=permalink,
-            prompt_version=prompt_version,
-            summary_style_examples=summary_style_examples,
-            mime=mime,
-            detail=detail,
-            reasoning_effort=reasoning_effort,
-            usage_sink=usage_sink,
-        )
+        for chunk_no, indexes in enumerate(index_chunks, start=1):
+            chunk_images = [images[i] for i in indexes]
+            chunk_labels = [labels[i] for i in indexes]
+            chunk_results.append(extract_metadata(
+                chunk_images,
+                text if chunk_no == 1 else "",
+                filename=present[indexes[0]].name,
+                model=model,
+                known_collection=collection,
+                known_repository=repository,
+                known_permalink=permalink,
+                prompt_version=prompt_version,
+                summary_style_examples=summary_style_examples,
+                detail=detail,
+                reasoning_effort=reasoning_effort,
+                usage_sink=usage_sink,
+                page_labels=chunk_labels,
+            ))
     except ExtractionFailed as exc:
         # Bill what was actually spent, then write NO output. The item stays unprocessed so a
         # resume retries it rather than skipping a silently-empty record.
@@ -694,10 +791,12 @@ def process_path(
                 ))
         spent = (ledger.total - item_cost_start) if ledger else 0.0
         os.makedirs(out_dir, exist_ok=True)
-        (Path(out_dir) / f"{item_path.stem}.failed.json").write_text(
+        (Path(out_dir) / f"{item_id}.failed.json").write_text(
             json.dumps({
                 "item_id": item_id,
-                "filename": item_path.name,
+                "pages": [p.name for p in present],
+                "chunks_completed": len(chunk_results),
+                "chunks_total": len(index_chunks),
                 "error": str(exc),
                 "model": model,
                 "prompt_version": prompt_version,
@@ -708,7 +807,8 @@ def process_path(
         )
         print(f" FAILED (${spent:.4f}): {exc}")
         if manifest:
-            manifest.add(item_id, "failed", error=str(exc), cost_usd=round(spent, 6))
+            manifest.add(item_id, "failed", error=str(exc), cost_usd=round(spent, 6),
+                         pages=len(present))
         return "failed"
 
     if ledger:
@@ -716,18 +816,22 @@ def process_path(
             ledger.add(record_from_usage(
                 item_id, "extraction", model, usage,
                 prompt_version=prompt_version, detail=detail,
-                note="retry attempt" if index else "",
+                note=f"chunk {index + 1}/{len(index_chunks)}" if len(index_chunks) > 1 else "",
             ))
+
+    md, merge_notes = _merge_chunk_metadata(chunk_results)
 
     review_notes: List[str] = []
     if apply_reviews:
-        review_path = Path(out_dir) / f"{item_path.stem}.review.json"
+        review_path = Path(out_dir) / f"{item_id}.review.json"
         if review_path.exists():
             try:
                 review_data = json.loads(review_path.read_text(encoding="utf-8"))
                 md, review_notes = apply_review_overrides(md, review_data)
             except Exception:
                 review_notes.append("Failed to apply review overrides.")
+    if merge_notes:
+        review_notes = merge_notes + review_notes
 
     md, derivation_notes = apply_derivations(md)
     raw_title = md.get("title")
@@ -747,24 +851,35 @@ def process_path(
     if place_notes:
         policy_notes = policy_notes + place_notes
 
-    width, height = image_dimensions(str(item_path))
-    sent_width, sent_height = sent_dimensions(img_bytes)
+    pages_context = []
+    for page, (page_bytes, page_mime), page_label_text in zip(present, images, labels):
+        source_w, source_h = image_dimensions(str(page))
+        sent_w, sent_h = sent_dimensions(page_bytes)
+        pages_context.append({
+            "filename": page.name,
+            "label": page_label_text,
+            # source_* is the file on disk; sent_* is what actually reached the model after the
+            # MAX_PIXELS cap (docs/DECISIONS.md D-009a). They differ on large scans.
+            "source_width": source_w, "source_height": source_h,
+            "sent_width": sent_w, "sent_height": sent_h,
+            "downscaled": (sent_w, sent_h) != (source_w, source_h),
+            "mime": page_mime, "payload_bytes": len(page_bytes),
+        })
     context = {
-        "filename": item_path.name,
+        "item_id": item_id,
+        "filename": present[0].name,
+        "page_count": len(present),
         "processing_confidence": float(conf),
         "processing_confidence_valid": tesseract_available(),
         "model": model,
         "prompt_version": prompt_version,
         "schema_version": SCHEMA_VERSION,
-        # source_* is the file on disk; sent_* is what actually reached the model after the
-        # MAX_PIXELS cap (docs/DECISIONS.md D-009a). They differ on large scans.
-        "image": {
-            "source_width": width, "source_height": height,
-            "sent_width": sent_width, "sent_height": sent_height,
-            "downscaled": (sent_width, sent_height) != (width, height),
-            "mime": mime, "detail": detail, "payload_bytes": len(img_bytes),
-        },
+        "detail": detail,
+        "api_calls": len(index_chunks),
+        "pages": pages_context,
     }
+    if missing_pages:
+        context["missing_pages"] = missing_pages
     if ledger:
         context["cost_usd"] = round(ledger.total - item_cost_start, 6)
     if summary_example_ids:
@@ -816,7 +931,7 @@ def process_path(
     os.makedirs(out_dir, exist_ok=True)
     output_path.write_text(json.dumps(envelope, ensure_ascii=False, indent=2), encoding="utf-8")
     # A previous failure for this item is now stale.
-    stale_failure = Path(out_dir) / f"{item_path.stem}.failed.json"
+    stale_failure = Path(out_dir) / f"{item_id}.failed.json"
     if stale_failure.exists():
         stale_failure.unlink()
 
@@ -824,11 +939,20 @@ def process_path(
     print(f" Done. (${spent:.4f})" if ledger else " Done.")
     if manifest:
         confidence = (md.get("field_confidence") or {}).get("transcript")
+        # Flag on rejections too, not just on an empty field. An item where the model proposed four
+        # subjects and only one survived the vocabulary needs review just as much as one that
+        # matched nothing -- and it is the more common case on a batch whose subject matter has
+        # drifted past the pilot vocabulary.
+        vocab_notes = [n for n in (policy_notes or [])
+                       if "NEEDS VOCAB REVIEW" in n or n.startswith(("Rejected subject", "Rejected genre", "Place tokens absent"))]
         manifest.add(
             item_id, "ok",
+            pages=len(present),
+            api_calls=len(index_chunks),
             cost_usd=round(spent, 6),
             transcript_confidence=confidence,
-            needs_vocab_review=any("NEEDS VOCAB REVIEW" in n for n in (policy_notes or [])),
+            needs_vocab_review=bool(vocab_notes),
+            vocab_notes=vocab_notes or None,
             validation_error=bool(validation_error),
         )
     return "ok"
@@ -873,6 +997,20 @@ def main() -> None:
         "--manifest",
         default="",
         help="Path to the per-item run manifest JSONL (default: <out-dir>/run_manifest.jsonl)",
+    )
+    parser.add_argument(
+        "--per-file",
+        action="store_true",
+        help="One record per image file instead of per archival item. Multi-page documents and "
+             "Recto/Verso pairs then get separate, possibly contradictory records.",
+    )
+    parser.add_argument(
+        "--max-pages-per-call",
+        type=int,
+        default=DEFAULT_MAX_PAGES_PER_CALL,
+        help=f"Pages per API request for multi-page items (default {DEFAULT_MAX_PAGES_PER_CALL}). "
+             "Larger items are chunked and merged; the cap keeps requests clear of long-context "
+             "pricing, which doubles the input rate.",
     )
     parser.add_argument(
         "--ocr-fallback",
@@ -1032,10 +1170,24 @@ def main() -> None:
     manifest = RunManifest(args.manifest or str(Path(args.out_dir) / "run_manifest.jsonl"))
     print(f"Run manifest: {manifest.path}")
 
-    def run_one(path: str) -> str:
+    # One record per archival item, not per scan. Filenames group pages of the same document
+    # (Page_1..N, Recto/Verso, a sequence-numbered volume) -- see app/grouping.py.
+    if args.per_file:
+        item_groups = {Path(p).stem: [Path(p)] for p in paths}
+        print(f"{len(paths)} files, processed individually (--per-file).")
+    else:
+        item_groups = group_items(paths)
+        multi = sum(1 for pages in item_groups.values() if len(pages) > 1)
+        print(f"{len(paths)} files -> {len(item_groups)} archival items "
+              f"({multi} span multiple pages, max {args.max_pages_per_call} pages per API call).")
+
+    def run_one(item_id: str) -> str:
+        pages = item_groups[item_id]
         try:
-            return process_path(
-                path=path,
+            return process_item(
+                paths=[str(p) for p in pages],
+                item_id=item_id,
+                max_pages_per_call=args.max_pages_per_call,
                 out_dir=args.out_dir,
                 collection=args.collection,
                 repository=args.repository,
@@ -1059,19 +1211,20 @@ def main() -> None:
             )
         except Exception as exc:
             # Anything outside extraction (OCR, IO, policy) still must not vanish into stdout.
-            print(f"x {path}: {type(exc).__name__}: {exc}")
-            manifest.add(_normalize_item_id(Path(path).name), "failed",
+            print(f"x {item_id}: {type(exc).__name__}: {exc}")
+            manifest.add(item_id, "failed",
                          error=f"{type(exc).__name__}: {exc}", stage="pipeline")
             return "failed"
 
     workers = max(1, args.workers)
+    item_ids = list(item_groups)
     if workers == 1:
-        for path in paths:
-            run_one(path)
+        for item_id in item_ids:
+            run_one(item_id)
     else:
-        print(f"Running {len(paths)} items with {workers} workers.")
+        print(f"Running {len(item_ids)} items with {workers} workers.")
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {pool.submit(run_one, path): path for path in paths}
+            futures = {pool.submit(run_one, item_id): item_id for item_id in item_ids}
             for future in as_completed(futures):
                 future.result()
 

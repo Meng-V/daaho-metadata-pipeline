@@ -89,7 +89,13 @@ def main() -> int:
             no_review += 1
         deferred += len(item.get("open_questions", []))
 
+        # The fixture's ids carry the file-stem form (BC-0692_Recto). Item-grouped runs write
+        # BC-0692.loc15.json, so accept either name.
         path = out_dir / f"{item_id}.loc15.json"
+        if not path.exists():
+            alt = out_dir / f"{item_id.rsplit('_', 1)[0]}.loc15.json"
+            if alt.exists():
+                path = alt
         if not path.exists():
             if item["findings"]:
                 missing_outputs.append(item_id)

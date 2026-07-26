@@ -206,3 +206,4 @@ out_fix/
 # Local batch staging and triage output
 images/
 images_triage.csv
+out_item_test/
