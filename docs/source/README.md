@@ -16,13 +16,20 @@ PII-free artifacts — listed in the right-hand column.
 | `comments _ suggested corrections -- Jinming.pdf` | The only human verification pass this collection has. 16 of 19 pilot images. | `tests/fixtures/jinming_review_2026-04.json` |
 | `Google Apps @ Miami University Mail - Re_ CSV Handoff.pdf` | April 2026 handoff email thread. Establishes which CSV version each review was made against, and the five name spellings flagged for confirmation. | `docs/DECISIONS.md` (D-005), fixture `provenance` block |
 
-## Known gap
+## Gap now closed
 
-The Apr 21 Google Sheet (`AI_Generated_Metadata_Test_Apr_21`) that the review assistant used for
-BC-0688 through BC-0713 is **not in this repo and may no longer exist**. `final_metadata.csv`
-(January 2026) is an earlier version; `out/final_metadata_2026-04-27_handoff.csv` is the April one.
-`scripts/csv_version_diff.py` compares the two that survive. Findings on items ≤ BC-0713 in the
-fixture therefore need re-anchoring against current output before being treated as open.
+`AI_Generated_Metadata_Test_Apr_21.xlsx` — the sheet the review assistant used for BC-0688 through
+BC-0713 — **was recovered on 2026-07-25** and is the baseline the current pipeline is compared
+against. See `docs/DECISIONS.md` D-012 for the field-by-field agreement and for which divergences
+are deliberate.
 
-If you can still retrieve that Apr 21 sheet from Google Drive, save it here as
-`AI_Generated_Metadata_Test_Apr_21.csv` — it would make the fixture's ≤ BC-0713 findings exact.
+Three CSV/XLSX versions now exist, oldest first:
+
+| Version | Location | Role |
+|---|---|---|
+| January 2026 | `final_metadata.csv` (committed) | earliest; a partial recovery source for content later lost (see KNOWN_ISSUES) |
+| April 21 2026 | `AI_Generated_Metadata_Test_Apr_21.xlsx` | what the review assistant reviewed BC-0688..0713 against |
+| April 27 2026 | `out/final_metadata_2026-04-27_handoff.csv` (committed) | the handoff sheet, and the column template for exports |
+
+`scripts/csv_version_diff.py` compares any two CSV versions. The xlsx needs no openpyxl to read —
+it is a zip of XML; unzip it and parse `xl/worksheets/sheet1.xml` against `xl/sharedStrings.xml`.

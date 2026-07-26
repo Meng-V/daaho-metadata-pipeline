@@ -74,6 +74,9 @@ class ExtractionFailureTests(unittest.TestCase):
     """A failed extraction must leave no output, or a resume skips a permanent hole."""
 
     ITEM_ID = "TEST-0001"
+    # A single-page item is named after its FILE stem, so the upload spreadsheet's Identifier and
+    # Preservation Filename columns keep the `_Recto` form that the April 2026 sheet recorded.
+    SINGLE_STEM = Path(__file__).stem
 
     def _process(self, tmp, side_effect, paths=None):
         manifest = RunManifest(str(Path(tmp) / "run_manifest.jsonl"))
@@ -99,20 +102,20 @@ class ExtractionFailureTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             status, manifest = self._process(tmp, ExtractionFailed("rate limited after 5 attempts"))
             self.assertEqual(status, "failed")
-            self.assertFalse((Path(tmp) / f"{self.ITEM_ID}.loc15.json").exists(),
+            self.assertFalse((Path(tmp) / f"{self.SINGLE_STEM}.loc15.json").exists(),
                              "a failed item must not leave an output file behind")
-            failed = Path(tmp) / f"{self.ITEM_ID}.failed.json"
+            failed = Path(tmp) / f"{self.SINGLE_STEM}.failed.json"
             self.assertTrue(failed.exists())
             self.assertIn("rate limited", json.loads(failed.read_text())["error"])
             self.assertEqual(manifest.counts(), {"failed": 1})
 
     def test_success_clears_a_stale_failure_marker(self):
         with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / f"{self.ITEM_ID}.failed.json").write_text("{}", encoding="utf-8")
+            (Path(tmp) / f"{self.SINGLE_STEM}.failed.json").write_text("{}", encoding="utf-8")
             status, manifest = self._process(tmp, lambda *a, **k: {"title": "A title, undated"})
             self.assertEqual(status, "ok")
-            self.assertTrue((Path(tmp) / f"{self.ITEM_ID}.loc15.json").exists())
-            self.assertFalse((Path(tmp) / f"{self.ITEM_ID}.failed.json").exists())
+            self.assertTrue((Path(tmp) / f"{self.SINGLE_STEM}.loc15.json").exists())
+            self.assertFalse((Path(tmp) / f"{self.SINGLE_STEM}.failed.json").exists())
             self.assertEqual(manifest.counts(), {"ok": 1})
 
     def test_multi_page_item_makes_one_record(self):
@@ -247,7 +250,7 @@ class ConcurrentCostAttributionTests(unittest.TestCase):
                     online_vocab_advisory=False, ocr_fallback=False,
                     ledger=ledger, manifest=manifest,
                 )
-            envelope = json.loads((Path(tmp) / "MINE.loc15.json").read_text())
+            envelope = json.loads((Path(tmp) / f"{Path(__file__).stem}.loc15.json").read_text())
             # extract_metadata is mocked, so no billable call is recorded for MINE.
             self.assertEqual(envelope["context"]["cost_usd"], 0.0)
             self.assertEqual(manifest.records[0]["cost_usd"], 0.0)

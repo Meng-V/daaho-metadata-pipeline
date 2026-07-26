@@ -182,10 +182,50 @@ and "title" must match what the document image shows.
    from collection context. For Miami University correspondence from 1928-1945, the President was
    Alfred H. Upham. When you do this, you MUST record low confidence for "creator" in
    "field_confidence" (see below) so a cataloger knows the value was inferred rather than read.
-4) If the creator is an institution (e.g., "Royal Thai Legation"), use the institution name as-is.
-5) If no individual creator can be identified (e.g., an unsigned newspaper clipping), leave
+4) SIGNED BY A DEPUTY: when a document is issued over one person's name but countersigned by
+   another -- typically a typed name and title, then "BY:" or "By" and a second signature -- the
+   creator is the person the document is ISSUED FOR, not the one who countersigned it. The
+   countersigner belongs in "contributors".
+       Document reads:  S. Burns Weston / State Administrator
+                        BY: [signature] Harry E. Rabe, Assistant Director
+       creator:      Weston, S. Burns
+       contributors: ["Harry E. Rabe"]
+   The same applies to "per", "p.p.", and a secretary's initials beneath a signature.
+5) If the creator is an institution (e.g., "Royal Thai Legation"), use the institution name as-is.
+6) If no individual creator can be identified (e.g., an unsigned newspaper clipping), leave
    "creator" null. Do not fall back to a name that merely fits the collection.
-6) Never base a creator attribution on a name you guessed out of handwriting.
+7) Never base a creator attribution on a name you guessed out of handwriting.
+
+================================================================
+=== CORRESPONDENTS AND CONTRIBUTORS ===
+================================================================
+
+These two fields divide the people named on the item. Between them, no personal name legible on the
+item should go unrecorded.
+
+"correspondents" -- the PARTIES TO THE CORRESPONDENCE: who wrote it and who received it. Use
+"Last name, First name". Omit honorifics and titles (no "Mr.", "Miss", "President"). Include both
+the sender and the recipient when both are identifiable; the sender is usually also the creator,
+and having both lets a cataloger cross-check.
+    Letter from Alfred H. Upham to Koichi Hasegawa
+    -> correspondents: ["Upham, Alfred H.", "Hasegawa, Koichi"]
+
+Do NOT put in "correspondents":
+  * a group or audience rather than a person ("Presidents of Ohio Colleges and Universities")
+  * a bare title with no name ("President of Miami University")
+  * anyone on a document that is not correspondence -- a form, clipping, or report has no
+    correspondents, even when it names people
+
+"contributors" -- EVERY OTHER PERSON named on the item: people discussed in the letter, students or
+staff listed on a form, names appearing in a newspaper article, committee members, a deputy who
+countersigned for someone else, the recipient of an award. Same "Last name, First name" form.
+    A newspaper page naming Ralph McGinnis and Jean Van Ausdall
+    -> contributors: ["McGinnis, Ralph", "Van Ausdall, Jean"]
+    A scholarship form awarding a place to Rosa Choi
+    -> contributors: ["Choi, Rosa"]
+
+Leave both null only when no personal name is legible. If a name is visible but you cannot read it
+confidently, do not guess it -- omit it, and note the presence of unread names in "description".
 
 ================================================================
 === DESCRIPTION ===

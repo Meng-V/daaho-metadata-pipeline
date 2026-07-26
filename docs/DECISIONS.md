@@ -420,6 +420,72 @@ presence of output files, which said nothing about what went wrong.
 `--workers N` runs items concurrently (default 1; 4–6 is reasonable). `CostLedger` and `RunManifest`
 are both lock-guarded, since a torn concurrent write would corrupt the accounting.
 
+### D-012 — Deliberate compatibility with the April 2026 spreadsheet
+
+**Decided:** 2026-07-25 by Meng Qu (project lead)
+**Status:** active
+
+`AI_Generated_Metadata_Test_Apr_21.xlsx` — the sheet recorded as missing in `docs/source/README.md`
+— was recovered, so the current pipeline can finally be compared against the one it replaces. Both
+produce the same 31 unique columns. Agreement on the 19 overlapping pilot items, after the fixes
+below:
+
+| Field | Agreement | |
+|---|---|---|
+| Identifier, Preservation Filename | **100%** | fixed, see below |
+| Creator, Contributors | **100%** | fixed, see below |
+| Decade, Language | **100%** | |
+| Date | 93% | the one difference is BC-0713, where this version is correct |
+| Genre | 75% | |
+| Location | 62% | deliberate |
+| Title, Subject (FAST), Summary, Transcript | 0–21% | deliberate |
+
+**Three defects were fixed to restore compatibility:**
+
+1. **Identifier / Preservation Filename.** Both derive from the output filename stem. Item grouping
+   named single-page output `BC-0688` where the April sheet records `BC-0688_Recto` — breaking the
+   spreadsheet's primary key. A single-page item is now named after its FILE; a multi-page item
+   keeps the item id, since neither `_Recto` nor `_Verso` alone identifies the sheet.
+2. **Creator on countersigned documents.** BC-0708 is issued over `S. Burns Weston, State
+   Administrator` and countersigned `BY: Harry E. Rabe, Assistant Director`. This version named
+   Rabe; the April sheet named Weston, and the image confirms Weston is right. The prompt now
+   states that the creator is the person the document is issued FOR, with the countersigner going
+   to `contributors`. Verified by re-running the item.
+3. **`contributors` had no definition in the prompt at all**, so names on the page that were
+   neither creator nor correspondent went nowhere — 26 of 128 items lost personal names entirely
+   (`Abdul Hanif`, `Heanon Wilkins`, `Dorothy Robinson`, `Minchin A. Chang` ...). Personal names are
+   a primary access point, so losing them makes those people unfindable. The prompt now divides the
+   two fields explicitly: `correspondents` are the parties to the correspondence, `contributors` is
+   everyone else named, and between them no legible personal name goes unrecorded.
+
+**Genre collapsed to the general form.** `letters (correspondence)` is now mapped to
+`correspondence` via `GENRE_PREFERENCE` in `app/main.py`. Both are authorized AAT preferred labels,
+so this is a granularity choice, not a correctness one, and the April sheet used the general form.
+Applied deterministically after vocabulary matching rather than by asking the prompt, so it is
+guaranteed. **Not** collapsed: `memorandums`, `itineraries`, `telegrams`, `postcards`,
+`clippings (information artifacts)`, `reports`, `prefaces` — the April sheet called all of these
+`correspondence`, but a memorandum is not a letter and flattening them would lose real distinctions.
+
+**Divergences kept deliberately:**
+
+- **Location** adds the creation/sender place first (`Ohio--Oxford; Kansas--Wichita`). Required by
+  the archivist MAP review, which asked for both sender and recipient locations.
+- **Correspondents** use inverted form without honorifics (`Sheehan, Murray`, not
+  `Mr. Murray Sheehan`) and record BOTH parties, where the April sheet recorded the recipient only
+  in direct form. Kept inverted because the April handoff had already moved `Creator` to inverted
+  form, and one sheet with two name conventions would complicate authority linking later. Kept both
+  parties because the field is plural and the sender is usually also the creator, so having both
+  lets a cataloger cross-check.
+- **Title, Summary, Transcript, Subject (FAST)** diverge because v4 rewrote them on purpose:
+  sentence case (D-001), the transcription policy (D-006/D-007), and a vocabulary grown from 47 to
+  83 terms with the guessing fallback removed (D-010).
+
+**Not adopted from the April sheet:** its `Correspondents` column recorded a group
+(`Presidents of Ohio Colleges and Universities`), a bare title (`President of Miami University`),
+and an award recipient on a form (`Rose Choi` — also misspelled; the image reads `Rosa`). None of
+those are parties to a correspondence. They now go to `contributors` where they belong, or are
+omitted where they name no person.
+
 ### Payload fix made at the same time
 
 `app/ocr.py` `pil_bytes()` re-encoded every image to full-resolution PNG, turning a 3.0 MB JPEG

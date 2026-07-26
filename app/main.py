@@ -372,6 +372,28 @@ def _enforce_approved_subjects(md: Dict[str, Any], approved_subjects: Set[str]) 
     return notes
 
 
+# Genre terms collapsed to a less specific but equally valid preferred label, to stay consistent
+# with the April 2026 spreadsheet. Both sides of each pair are authorized AAT preferred labels; the
+# choice is one of granularity, not correctness, and the earlier output used the general form for
+# letters. Applied after vocabulary matching, so the specific form is still what gets validated.
+GENRE_PREFERENCE = {
+    "letters (correspondence)": "correspondence",
+}
+
+
+def _apply_genre_preference(genre: List[str]) -> Tuple[List[str], List[str]]:
+    collapsed: List[str] = []
+    notes: List[str] = []
+    for term in genre:
+        preferred = GENRE_PREFERENCE.get(term, term)
+        if preferred != term:
+            notes.append(f"Collapsed genre '{term}' to '{preferred}' for consistency with the "
+                         f"April 2026 spreadsheet (see docs/DECISIONS.md D-012).")
+        if preferred not in collapsed:
+            collapsed.append(preferred)
+    return collapsed, notes
+
+
 def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> List[str]:
     if not approved_genre:
         return []
@@ -414,6 +436,8 @@ def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> Lis
     if not genre:
         notes.append("NEEDS VOCAB REVIEW: no approved AAT genre matched; left empty rather than guessing.")
 
+    genre, preference_notes = _apply_genre_preference(genre)
+    notes.extend(preference_notes)
     md["genre"] = genre
     return notes
 
@@ -756,13 +780,18 @@ def process_item(
         return "missing"
     missing_pages = [p.name for p in page_paths if not p.exists()]
 
-    output_path = Path(out_dir) / f"{item_id}{output_ext}"
+    # A single-page item is named after its FILE, a multi-page item after the item. Both the
+    # Identifier and Preservation Filename columns of the upload spreadsheet derive from this stem,
+    # and the April 2026 sheet records `BC-0688_Recto` -- so naming single-page output BC-0688 broke
+    # the spreadsheet's primary key. Multi-page items keep the item id, since neither `_Recto` nor
+    # `_Verso` alone identifies the sheet they belong to.
+    output_stem = present[0].stem if len(present) == 1 else item_id
+    output_path = Path(out_dir) / f"{output_stem}{output_ext}"
     label = item_id if len(present) == 1 else f"{item_id} ({len(present)} pages)"
-    # Runs before item grouping named their output after the FILE stem, so a single-page item
-    # landed at e.g. BC-0692_Recto.loc15.json rather than BC-0692.loc15.json. Honor the legacy name
-    # when deciding whether work is already done, or a resume would re-bill the whole pilot set.
     existing = [output_path] + [
-        Path(out_dir) / f"{page.stem}{output_ext}" for page in present if page.stem != item_id
+        Path(out_dir) / f"{candidate}{output_ext}"
+        for candidate in {item_id, *(p.stem for p in present)}
+        if candidate != output_stem
     ]
     already = next((p for p in existing if p.exists()), None)
     if already and not overwrite:
@@ -855,7 +884,7 @@ def process_item(
                 ))
         spent = ledger.total_for(item_id) if ledger else 0.0
         os.makedirs(out_dir, exist_ok=True)
-        (Path(out_dir) / f"{item_id}.failed.json").write_text(
+        (Path(out_dir) / f"{output_stem}.failed.json").write_text(
             json.dumps({
                 "item_id": item_id,
                 "pages": [p.name for p in present],
@@ -887,7 +916,7 @@ def process_item(
 
     review_notes: List[str] = []
     if apply_reviews:
-        review_path = Path(out_dir) / f"{item_id}.review.json"
+        review_path = Path(out_dir) / f"{output_stem}.review.json"
         if review_path.exists():
             try:
                 review_data = json.loads(review_path.read_text(encoding="utf-8"))
@@ -995,7 +1024,7 @@ def process_item(
     os.makedirs(out_dir, exist_ok=True)
     output_path.write_text(json.dumps(envelope, ensure_ascii=False, indent=2), encoding="utf-8")
     # A previous failure for this item is now stale.
-    stale_failure = Path(out_dir) / f"{item_id}.failed.json"
+    stale_failure = Path(out_dir) / f"{output_stem}.failed.json"
     if stale_failure.exists():
         stale_failure.unlink()
 
