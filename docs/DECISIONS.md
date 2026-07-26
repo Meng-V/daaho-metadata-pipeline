@@ -354,6 +354,72 @@ for typed documents. The cap was raised 900 → 4000 for the case where it is ex
 
 To restore local OCR: `pip install -r requirements.txt && brew install tesseract`.
 
+### D-010 — Controlled vocabularies never guess: unmatched terms are left empty and flagged
+
+**Decided:** 2026-07-25 by Meng Qu (project lead)
+**Status:** active
+
+`_enforce_approved_subjects()` used to fall back to `"Correspondence"` — or, failing that,
+`sorted(approved_subjects)[0]`, whichever approved term sorted first alphabetically — whenever no
+approved term matched. `_enforce_approved_genre()` did the same with `"correspondence"`.
+
+On the 19-image pilot this was invisible. At 300 images it is actively destructive: the subject
+vocabulary holds **47 terms** and the place list **9**, both sized for the pilot, so any item whose
+subject matter falls outside that coverage receives an unrelated term — carrying the same
+`AI-Proposed Subject` provenance label as a real reading. Worse, an extraction that returned nothing
+came out the other side holding `subjects: ["Correspondence"]`.
+
+Now:
+
+- Unmatched subject and genre terms are **rejected by name** in `policy_notes`, and the field is
+  left empty.
+- A field left empty this way records `NEEDS VOCAB REVIEW`, which `run_manifest.jsonl` surfaces per
+  item as `needs_vocab_review`.
+- Place tokens dropped during canonicalization are recorded too. Previously a two-token place where
+  only one matched was silently rewritten to the single match.
+- **Deliberate asymmetry:** when *no* place token matches, the original value is kept unvalidated
+  rather than blanked. An unvalidated place a cataloger can see beats an empty field; for subjects
+  and genre the reverse holds, because a wrong controlled term is worse than none.
+
+An empty field a cataloger can see is better than a wrong one they cannot. Pinned by
+`tests/test_batch_safety.py`.
+
+**Still open:** `vocab/fast_places.txt` (9) and `vocab/fast_subjects.txt` (47) remain pilot-sized.
+This decision makes their under-coverage *visible* instead of silently wrong; it does not fix it.
+Expect a large `needs_vocab_review` count on the first real batch, and grow the lists from it.
+
+---
+
+### D-011 — A failed item writes no output, and every run leaves a manifest
+
+**Decided:** 2026-07-25 by Meng Qu (project lead)
+**Status:** active
+
+`extract_metadata()` returned `{}` on failure. `process_path()` then ran that empty dict through
+policy enforcement — which stamped a fallback subject onto it (D-010) — and wrote a full,
+normal-looking envelope. Because resume logic is "skip if the output file exists", **one transient
+rate limit became one permanent, invisible hole** that looked processed forever.
+
+Three changes:
+
+1. `extract_metadata()` now raises `ExtractionFailed` instead of returning `{}`. A failure cannot be
+   mistaken for a result by any caller.
+2. On failure `process_path()` writes **no** `.loc15.json`. It writes a sibling `.failed.json` with
+   the error, the attempts billed, and the cost spent, then returns `failed`. Rerunning the same
+   command retries exactly the failures. A later success deletes the stale marker.
+3. Retries went from one immediate re-fire to **5 attempts with exponential backoff and full
+   jitter**, honoring `Retry-After` when the server sends it. Rate limits and 5xx are retried;
+   401/400 are not, since hammering an auth or schema error only wastes money.
+   Tunable via `LLM_MAX_ATTEMPTS`, `LLM_BACKOFF_BASE`, `LLM_BACKOFF_CAP`.
+
+Every run writes `<out-dir>/run_manifest.jsonl`, one record per item: `ok` / `skipped` / `failed` /
+`missing`, plus per-item cost, `transcript_confidence`, and `needs_vocab_review`. The run prints an
+outcome tally and lists failures at the end. Previously the only evidence a run had finished was the
+presence of output files, which said nothing about what went wrong.
+
+`--workers N` runs items concurrently (default 1; 4–6 is reasonable). `CostLedger` and `RunManifest`
+are both lock-guarded, since a torn concurrent write would corrupt the accounting.
+
 ### Payload fix made at the same time
 
 `app/ocr.py` `pil_bytes()` re-encoded every image to full-resolution PNG, turning a 3.0 MB JPEG

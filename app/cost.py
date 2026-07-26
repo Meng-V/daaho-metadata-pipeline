@@ -20,6 +20,7 @@ as of 2026-07-25. Verify before relying on a projection -- see PRICING_VERIFIED_
 import json
 import os
 import sys
+import threading
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -203,27 +204,35 @@ def free_record(item_id: str, call_type: str, note: str = "") -> CallRecord:
 
 
 class CostLedger:
-    """Append-only JSONL ledger. Safe to use across runs; entries accumulate."""
+    """Append-only JSONL ledger. Safe to use across runs; entries accumulate.
+
+    Thread-safe, because a concurrent run has several workers billing at once and a torn write
+    would corrupt the accounting.
+    """
 
     def __init__(self, path: Optional[str]):
         self.path = Path(path) if path else None
         self.records: List[CallRecord] = []
+        self._lock = threading.Lock()
         if self.path:
             os.makedirs(self.path.parent, exist_ok=True)
 
     def add(self, record: CallRecord) -> CallRecord:
-        self.records.append(record)
-        if self.path:
-            with self.path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(asdict(record), ensure_ascii=False) + "\n")
+        with self._lock:
+            self.records.append(record)
+            if self.path:
+                with self.path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(asdict(record), ensure_ascii=False) + "\n")
         return record
 
     @property
     def total(self) -> float:
-        return round(sum(r.cost_total for r in self.records), 6)
+        with self._lock:
+            return round(sum(r.cost_total for r in self.records), 6)
 
     def summary_line(self) -> str:
-        billable = [r for r in self.records if r.tier != "free"]
+        with self._lock:
+            billable = [r for r in self.records if r.tier != "free"]
         if not billable:
             return "no billable calls"
         return f"{len(billable)} calls, ${self.total:.4f}"

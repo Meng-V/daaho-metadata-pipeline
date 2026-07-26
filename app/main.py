@@ -3,12 +3,15 @@ import csv
 import json
 import os
 import re
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from difflib import get_close_matches
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from .ai_metadata import (
     PROMPT_VERSION,
+    ExtractionFailed,
     apply_review_overrides,
     apply_tier_policy,
     default_detail,
@@ -49,6 +52,39 @@ try:
     from jsonschema import Draft7Validator
 except Exception:
     Draft7Validator = None
+
+
+class RunManifest:
+    """Append-only per-item outcome log, so a 300-image run's status is knowable.
+
+    Without this, the only evidence a run finished was the presence of output files -- which said
+    nothing about items that errored, and (before ExtractionFailed) nothing about items whose
+    output was written from empty metadata. Thread-safe: a concurrent run appends from workers.
+    """
+
+    def __init__(self, path: Optional[str]):
+        self.path = Path(path) if path else None
+        self.records: List[Dict[str, Any]] = []
+        self._lock = threading.Lock()
+        if self.path:
+            os.makedirs(self.path.parent, exist_ok=True)
+
+    def add(self, item_id: str, status: str, **extra: Any) -> None:
+        record = {"item_id": item_id, "status": status, **extra}
+        with self._lock:
+            self.records.append(record)
+            if self.path:
+                with self.path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    def counts(self) -> Dict[str, int]:
+        tally: Dict[str, int] = {}
+        for record in self.records:
+            tally[record["status"]] = tally.get(record["status"], 0) + 1
+        return tally
+
+    def failures(self) -> List[Dict[str, Any]]:
+        return [r for r in self.records if r["status"] == "failed"]
 
 
 def _validate(obj: Dict[str, Any]) -> str:
@@ -235,6 +271,7 @@ def _enforce_approved_subjects(md: Dict[str, Any], approved_subjects: Set[str]) 
             normalized_approved_subjects[normalized_term] = approved_term
 
     subjects: List[str] = []
+    rejected: List[str] = []
     existing_subjects = md.get("subjects")
     if isinstance(existing_subjects, list):
         for raw_subject in existing_subjects:
@@ -247,18 +284,29 @@ def _enforce_approved_subjects(md: Dict[str, Any], approved_subjects: Set[str]) 
                 matches = get_close_matches(normalized_term, sorted(normalized_approved_subjects.keys()), n=1, cutoff=0.86)
                 if matches:
                     canonical_term = normalized_approved_subjects[matches[0]]
-            if canonical_term and canonical_term not in subjects:
-                subjects.append(canonical_term)
+            if canonical_term:
+                if canonical_term not in subjects:
+                    subjects.append(canonical_term)
+            else:
+                rejected.append(term)
 
     if not subjects:
         subjects = _derive_subjects_from_metadata(md, normalized_approved_subjects)
         if subjects:
             notes.append("Derived subjects deterministically from metadata text overlap with approved FAST list.")
 
+    # No arbitrary fallback. This previously wrote "Correspondence" -- or, failing that, whichever
+    # approved term sorted first alphabetically -- whenever nothing matched. On a 47-term pilot
+    # vocabulary that silently stamped an unrelated subject onto any item outside its coverage, and
+    # the result carried the same provenance label as a real reading. An empty field a cataloger can
+    # see is strictly better than a wrong one they cannot. See docs/DECISIONS.md D-010.
+    if rejected:
+        notes.append(
+            "Rejected subject terms absent from the approved FAST list: "
+            + "; ".join(sorted(set(rejected)))
+        )
     if not subjects:
-        fallback_subject = "Correspondence" if "correspondence" in normalized_approved_subjects else sorted(approved_subjects)[0]
-        subjects = [fallback_subject]
-        notes.append(f"Applied deterministic fallback FAST subject '{fallback_subject}'.")
+        notes.append("NEEDS VOCAB REVIEW: no approved FAST subject matched; left empty rather than guessing.")
 
     md["subjects"] = subjects
     return notes
@@ -276,6 +324,7 @@ def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> Lis
             normalized_approved_genre[normalized_term] = approved_term
 
     genre: List[str] = []
+    rejected: List[str] = []
     existing_genre = md.get("genre")
     if isinstance(existing_genre, list):
         for raw_genre in existing_genre:
@@ -288,13 +337,22 @@ def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> Lis
                 matches = get_close_matches(normalized_term, sorted(normalized_approved_genre.keys()), n=1, cutoff=0.86)
                 if matches:
                     canonical_term = normalized_approved_genre[matches[0]]
-            if canonical_term and canonical_term not in genre:
-                genre.append(canonical_term)
+            if canonical_term:
+                if canonical_term not in genre:
+                    genre.append(canonical_term)
+            else:
+                rejected.append(term)
 
+    # Same reasoning as subjects: no arbitrary fallback. This previously stamped "correspondence"
+    # on anything unmatched, which would mislabel every clipping, form and telegram in a batch whose
+    # genre fell outside the vocabulary. See docs/DECISIONS.md D-010.
+    if rejected:
+        notes.append(
+            "Rejected genre terms absent from the approved AAT list: "
+            + "; ".join(sorted(set(rejected)))
+        )
     if not genre:
-        fallback_genre = normalized_approved_genre.get("correspondence", "correspondence")
-        genre = [fallback_genre]
-        notes.append(f"Applied deterministic fallback AAT genre '{fallback_genre}'.")
+        notes.append("NEEDS VOCAB REVIEW: no approved AAT genre matched; left empty rather than guessing.")
 
     md["genre"] = genre
     return notes
@@ -311,6 +369,7 @@ def _enforce_approved_places(md: Dict[str, Any], approved_places: Set[str]) -> L
     notes: List[str] = []
     normalized_places: Dict[str, str] = {place.lower(): place for place in approved_places}
     places: List[str] = []
+    rejected: List[str] = []
     for raw_token in place_value.split(";"):
         token = " ".join(raw_token.strip().split())
         if not token:
@@ -325,13 +384,29 @@ def _enforce_approved_places(md: Dict[str, Any], approved_places: Set[str]) -> L
                 if dc_place in approved_places:
                     canonical = dc_place
 
-        if canonical and canonical not in places:
-            places.append(canonical)
-            if canonical != token:
-                notes.append(f"Canonicalized place '{token}' to '{canonical}'.")
+        if canonical:
+            if canonical not in places:
+                places.append(canonical)
+                if canonical != token:
+                    notes.append(f"Canonicalized place '{token}' to '{canonical}'.")
+        else:
+            rejected.append(token)
 
+    # Dropped tokens used to vanish without a trace: a two-token place where only one matched was
+    # silently rewritten to the single match. With a 9-entry pilot place list that loses real data
+    # invisibly, so every rejection is now recorded. Note the asymmetry, which is deliberate: when
+    # NO token matches, the original value is left intact rather than blanked, because an
+    # unvalidated place a cataloger can see beats an empty field.
+    if rejected:
+        notes.append(
+            "Place tokens absent from the approved FAST list: " + "; ".join(sorted(set(rejected)))
+        )
     if places and "; ".join(places) != place_value:
         md["place"] = "; ".join(places)
+    elif not places:
+        notes.append(
+            "NEEDS VOCAB REVIEW: no approved FAST place matched; original value kept unvalidated."
+        )
     return notes
 
 
@@ -531,16 +606,26 @@ def process_path(
     ledger: Optional[CostLedger] = None,
     reasoning_effort: str = "",
     ocr_fallback: bool = True,
-) -> None:
+    manifest: Optional[RunManifest] = None,
+) -> str:
+    """Process one item. Returns a status: ok | skipped | missing | failed.
+
+    On extraction failure NOTHING is written to output_path, so a resume retries the item instead
+    of skipping a hole. A sibling .failed.json records the reason.
+    """
     item_path = Path(path)
     if not item_path.exists():
         print(f"Skip missing: {item_path}")
-        return
+        if manifest:
+            manifest.add(_normalize_item_id(item_path.name), "missing", path=str(item_path))
+        return "missing"
 
     output_path = Path(out_dir) / f"{item_path.stem}{output_ext}"
     if output_path.exists() and not overwrite:
         print(f"Skipping {item_path.name} (already processed)")
-        return
+        if manifest:
+            manifest.add(_normalize_item_id(item_path.name), "skipped")
+        return "skipped"
 
     print(f"Processing {item_path.name}...", end="", flush=True)
     item_id = _normalize_item_id(item_path.name)
@@ -581,21 +666,51 @@ def process_path(
             pass
 
     usage_sink: List[Any] = []
-    md = extract_metadata(
-        img_bytes,
-        text,
-        filename=item_path.name,
-        model=model,
-        known_collection=collection,
-        known_repository=repository,
-        known_permalink=permalink,
-        prompt_version=prompt_version,
-        summary_style_examples=summary_style_examples,
-        mime=mime,
-        detail=detail,
-        reasoning_effort=reasoning_effort,
-        usage_sink=usage_sink,
-    )
+    try:
+        md = extract_metadata(
+            img_bytes,
+            text,
+            filename=item_path.name,
+            model=model,
+            known_collection=collection,
+            known_repository=repository,
+            known_permalink=permalink,
+            prompt_version=prompt_version,
+            summary_style_examples=summary_style_examples,
+            mime=mime,
+            detail=detail,
+            reasoning_effort=reasoning_effort,
+            usage_sink=usage_sink,
+        )
+    except ExtractionFailed as exc:
+        # Bill what was actually spent, then write NO output. The item stays unprocessed so a
+        # resume retries it rather than skipping a silently-empty record.
+        if ledger:
+            for index, usage in enumerate(usage_sink):
+                ledger.add(record_from_usage(
+                    item_id, "extraction", model, usage,
+                    prompt_version=prompt_version, detail=detail,
+                    note="failed attempt" if index else "failed",
+                ))
+        spent = (ledger.total - item_cost_start) if ledger else 0.0
+        os.makedirs(out_dir, exist_ok=True)
+        (Path(out_dir) / f"{item_path.stem}.failed.json").write_text(
+            json.dumps({
+                "item_id": item_id,
+                "filename": item_path.name,
+                "error": str(exc),
+                "model": model,
+                "prompt_version": prompt_version,
+                "attempts_billed": len(usage_sink),
+                "cost_usd": round(spent, 6),
+            }, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f" FAILED (${spent:.4f}): {exc}")
+        if manifest:
+            manifest.add(item_id, "failed", error=str(exc), cost_usd=round(spent, 6))
+        return "failed"
+
     if ledger:
         for index, usage in enumerate(usage_sink):
             ledger.add(record_from_usage(
@@ -700,10 +815,23 @@ def process_path(
 
     os.makedirs(out_dir, exist_ok=True)
     output_path.write_text(json.dumps(envelope, ensure_ascii=False, indent=2), encoding="utf-8")
-    if ledger:
-        print(f" Done. (${ledger.total - item_cost_start:.4f})")
-    else:
-        print(" Done.")
+    # A previous failure for this item is now stale.
+    stale_failure = Path(out_dir) / f"{item_path.stem}.failed.json"
+    if stale_failure.exists():
+        stale_failure.unlink()
+
+    spent = (ledger.total - item_cost_start) if ledger else 0.0
+    print(f" Done. (${spent:.4f})" if ledger else " Done.")
+    if manifest:
+        confidence = (md.get("field_confidence") or {}).get("transcript")
+        manifest.add(
+            item_id, "ok",
+            cost_usd=round(spent, 6),
+            transcript_confidence=confidence,
+            needs_vocab_review=any("NEEDS VOCAB REVIEW" in n for n in (policy_notes or [])),
+            validation_error=bool(validation_error),
+        )
+    return "ok"
 
 
 def is_supported(name: str) -> bool:
@@ -735,6 +863,17 @@ def main() -> None:
         help="Path to the append-only cost ledger JSONL (default: <out-dir>/cost_ledger.jsonl)",
     )
     parser.add_argument("--no-cost-ledger", action="store_true", help="Disable cost tracking")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Concurrent items (default 1). 4-6 is reasonable; retries back off on rate limits.",
+    )
+    parser.add_argument(
+        "--manifest",
+        default="",
+        help="Path to the per-item run manifest JSONL (default: <out-dir>/run_manifest.jsonl)",
+    )
     parser.add_argument(
         "--ocr-fallback",
         action="store_true",
@@ -890,9 +1029,12 @@ def main() -> None:
         )
         return
 
-    for path in paths:
+    manifest = RunManifest(args.manifest or str(Path(args.out_dir) / "run_manifest.jsonl"))
+    print(f"Run manifest: {manifest.path}")
+
+    def run_one(path: str) -> str:
         try:
-            process_path(
+            return process_path(
                 path=path,
                 out_dir=args.out_dir,
                 collection=args.collection,
@@ -913,9 +1055,34 @@ def main() -> None:
                 ledger=ledger,
                 reasoning_effort=args.reasoning_effort,
                 ocr_fallback=args.ocr_fallback,
+                manifest=manifest,
             )
         except Exception as exc:
-            print(f"x {path}: {exc}")
+            # Anything outside extraction (OCR, IO, policy) still must not vanish into stdout.
+            print(f"x {path}: {type(exc).__name__}: {exc}")
+            manifest.add(_normalize_item_id(Path(path).name), "failed",
+                         error=f"{type(exc).__name__}: {exc}", stage="pipeline")
+            return "failed"
+
+    workers = max(1, args.workers)
+    if workers == 1:
+        for path in paths:
+            run_one(path)
+    else:
+        print(f"Running {len(paths)} items with {workers} workers.")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {pool.submit(run_one, path): path for path in paths}
+            for future in as_completed(futures):
+                future.result()
+
+    counts = manifest.counts()
+    print(f"\nOutcome: " + ", ".join(f"{status}={n}" for status, n in sorted(counts.items())))
+    failures = manifest.failures()
+    if failures:
+        print(f"\n{len(failures)} FAILED -- no output written, so a rerun retries them:")
+        for record in failures:
+            print(f"  {record['item_id']:18} {record.get('error', '')[:96]}")
+        print("Rerun the same command to retry only the failures.")
 
     if ledger and ledger.records:
         billable = [r for r in ledger.records if r.tier != "free"]

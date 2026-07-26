@@ -1,4 +1,4 @@
-import os, json, base64
+import os, json, base64, random, time
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from .schema import (
@@ -17,6 +17,16 @@ try:
     from openai import OpenAI
 except Exception:
     OpenAI = None
+
+class ExtractionFailed(RuntimeError):
+    """Extraction did not produce usable metadata.
+
+    Raised instead of returning {} so the caller cannot mistake a failure for a result. The old
+    behavior returned an empty dict, which process_path wrote to disk as a full envelope; a resume
+    then skipped it because the output file existed. One transient error became one permanent,
+    invisible hole in the dataset.
+    """
+
 
 PROMPT_VERSION = "loc15_v2"
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
@@ -167,6 +177,53 @@ def _image_part(img_bytes: bytes, mime: str, detail: str) -> Dict[str, Any]:
     return {"type": "image_url", "image_url": image_url}
 
 
+# Retry policy. The previous code retried once with no delay, which on a rate limit meant firing
+# the same request straight back into the limiter and then giving up -- and a give-up returned {},
+# which the caller wrote to disk as a complete-looking output. Over 300 images one 429 became one
+# permanent hole that looked processed.
+MAX_ATTEMPTS = int(os.getenv("LLM_MAX_ATTEMPTS", "5"))
+BACKOFF_BASE_SECONDS = float(os.getenv("LLM_BACKOFF_BASE", "2.0"))
+BACKOFF_CAP_SECONDS = float(os.getenv("LLM_BACKOFF_CAP", "60"))
+
+_RETRYABLE_MARKERS = (
+    "rate limit", "rate_limit", "429", "too many requests",
+    "500", "502", "503", "504", "overloaded", "timeout", "timed out",
+    "connection", "temporarily unavailable", "service unavailable",
+)
+
+
+def _is_retryable(error: Exception) -> bool:
+    status = getattr(error, "status_code", None) or getattr(error, "http_status", None)
+    if isinstance(status, int):
+        return status == 429 or status >= 500
+    text = str(error).lower()
+    return any(marker in text for marker in _RETRYABLE_MARKERS)
+
+
+def _sleep_backoff(attempt: int, retry_after: Optional[float] = None) -> float:
+    """Exponential backoff with full jitter. Honors a server-provided Retry-After when present."""
+    if retry_after and retry_after > 0:
+        delay = min(float(retry_after), BACKOFF_CAP_SECONDS)
+    else:
+        delay = min(BACKOFF_BASE_SECONDS * (2 ** attempt), BACKOFF_CAP_SECONDS)
+        delay = random.uniform(delay / 2, delay)
+    time.sleep(delay)
+    return delay
+
+
+def _retry_after_of(error: Exception) -> Optional[float]:
+    response = getattr(error, "response", None)
+    headers = getattr(response, "headers", None) or {}
+    for key in ("retry-after", "Retry-After", "x-ratelimit-reset-requests"):
+        value = headers.get(key) if hasattr(headers, "get") else None
+        if value:
+            try:
+                return float(str(value).rstrip("s"))
+            except ValueError:
+                continue
+    return None
+
+
 def _completion_kwargs(model: str, max_output_tokens: int, reasoning_effort: str = "") -> Dict[str, Any]:
     """Sampling/limit parameters. GPT-5 models reject temperature/top_p/penalties and use
     max_completion_tokens rather than max_tokens."""
@@ -240,7 +297,8 @@ def extract_metadata(
     ]
 
     last_error: Optional[str] = None
-    for attempt in range(2):
+    for attempt in range(MAX_ATTEMPTS):
+        is_last = attempt == MAX_ATTEMPTS - 1
         try:
             resp = client.chat.completions.create(
                 model=model,
@@ -261,40 +319,41 @@ def extract_metadata(
             raw = resp.choices[0].message.content or "{}"
             try:
                 parsed = json.loads(raw)
-                if not parsed or len(parsed) == 0:
+                if not parsed:
                     last_error = f"API returned empty metadata. Raw response: {raw[:200]}"
-                    if attempt == 0:
-                        print(f"WARNING: {last_error} Retrying once for {filename}.")
+                    if not is_last:
+                        delay = _sleep_backoff(attempt)
+                        print(f"WARNING: {last_error} Retry {attempt + 2}/{MAX_ATTEMPTS} for "
+                              f"{filename} in {delay:.1f}s.")
                         continue
-                    print(f"WARNING: {last_error}")
-                    return {}
-
-                parsed = _clean_metadata(parsed)
-                return parsed
+                    raise ExtractionFailed(last_error)
+                return _clean_metadata(parsed)
             except json.JSONDecodeError as parse_err:
                 print(f"WARNING: JSON parse error for {filename}: {parse_err}")
                 i, j = raw.find("{"), raw.rfind("}")
                 if i >= 0 and j > i:
                     try:
-                        parsed = json.loads(raw[i:j+1])
-                        parsed = _clean_metadata(parsed)
-                        return parsed
+                        return _clean_metadata(json.loads(raw[i:j + 1]))
                     except Exception:
                         pass
-                last_error = "Could not recover JSON."
-                if attempt == 0:
-                    print(f"WARNING: {last_error} Retrying once for {filename}.")
+                last_error = f"Could not recover JSON: {parse_err}"
+                if not is_last:
+                    delay = _sleep_backoff(attempt)
+                    print(f"WARNING: {last_error} Retry {attempt + 2}/{MAX_ATTEMPTS} for "
+                          f"{filename} in {delay:.1f}s.")
                     continue
-                print(f"ERROR: {last_error} for {filename}")
-                return {}
-        except Exception as e:
-            last_error = str(e)
-            if attempt == 0:
-                print(f"WARNING extracting metadata for {filename}: {e}. Retrying once.")
-                continue
-            print(f"ERROR extracting metadata for {filename}: {e}")
-            return {}
+                raise ExtractionFailed(last_error)
+        except ExtractionFailed:
+            raise
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+            retryable = _is_retryable(exc)
+            if is_last or not retryable:
+                raise ExtractionFailed(
+                    f"{last_error}" + ("" if retryable else " (not retryable)")
+                ) from exc
+            delay = _sleep_backoff(attempt, _retry_after_of(exc))
+            print(f"WARNING extracting metadata for {filename}: {last_error}. "
+                  f"Retry {attempt + 2}/{MAX_ATTEMPTS} in {delay:.1f}s.")
 
-    if last_error:
-        print(f"ERROR extracting metadata for {filename}: {last_error}")
-    return {}
+    raise ExtractionFailed(last_error or "exhausted retries")
