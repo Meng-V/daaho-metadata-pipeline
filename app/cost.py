@@ -28,6 +28,41 @@ from typing import Any, Dict, List, Optional
 PRICING_VERIFIED_ON = "2026-07-25"
 PRICING_SOURCE = "https://developers.openai.com/api/docs/pricing"
 
+# ---------------------------------------------------------------------------------------------
+# Billing calibration
+#
+# The ledger prices the API's own reported token counts at OpenAI's PUBLISHED LIST RATES. On
+# 2026-07-26 that produced $31.15 against an actual billed $19.70 on the platform usage dashboard
+# for the same window -- the ledger overstated by 58%.
+#
+# The published rates were re-verified and are correct, and the request counts line up, so this is
+# not a transcription error in the table below. Comparing per-model totals:
+#
+#     terra   ledger $26.103   billed $16.464   ratio 0.631
+#     sol     ledger $ 5.043   billed $ 3.235   ratio 0.641
+#
+# Two ratios that close together across different models indicate an account-level discount of
+# roughly 36%, not a token-counting fault. (Per-category ratios vary from 0.58 to 0.69, so the
+# cached/uncached split in this ledger does not match how the dashboard buckets tokens; that
+# affects the category breakdown but not the total.)
+#
+# The cause is not documented anywhere this code can read, so it is NOT baked into the rates.
+# Reports show list price and, when a factor is set, the calibrated figure beside it -- always
+# saying which is which. Set it from an observed dashboard total:
+#
+#     BILLING_CALIBRATION=0.6325 python3 scripts/cost_deliverable.py
+#
+# Re-derive it whenever the billing arrangement might have changed. THE DASHBOARD IS AUTHORITATIVE
+# for what was actually charged; this ledger is authoritative for relative cost -- which item, tier
+# or call type consumed what share -- because those ratios hold under any uniform discount.
+BILLING_CALIBRATION = float(os.getenv("BILLING_CALIBRATION", "0")) or None
+CALIBRATION_OBSERVED_ON = "2026-07-26"
+CALIBRATION_NOTE = (
+    "List prices overstated the actual bill by 58% on 2026-07-26 "
+    "($31.15 ledger vs $19.70 billed). Set BILLING_CALIBRATION to reconcile; "
+    "the platform usage dashboard is authoritative for amounts charged."
+)
+
 
 @dataclass(frozen=True)
 class Tier:

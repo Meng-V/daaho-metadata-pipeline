@@ -192,8 +192,7 @@ Microsoft/
 out_fewshot_summary_test/
 
 # DAAHO project source documents (may contain student-worker PII; repo is PUBLIC)
-docs/source/*
-!docs/source/README.md
+docs/source/
 
 # One-off diagnostic runs (findings recorded in KNOWN_ISSUES.md / docs/DECISIONS.md).
 # The two full 19-image runs, out_v4/ and out_v4b/, ARE committed as quality/cost baselines.

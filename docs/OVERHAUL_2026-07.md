@@ -125,8 +125,18 @@ deleted.
 | Failure handling | wrote a complete-looking empty record | writes nothing, retries on resume |
 | Tests | 9 | 48 |
 
-Delivered: 128 records over 316 images for **$28.38** ($0.22/record, $0.09/image), 10 flagged for
-human review. **$34.25** across every run including the pilots and diagnostics.
+Delivered: 128 records over 316 images for **$17.95** ($0.14/record, $0.057/image), 10 flagged for
+human review. **$19.70** across every run including the pilots and diagnostics — the figure the
+provider actually charged.
+
+**A late correction worth recording.** Those numbers were first reported as $28.38 and $34.25,
+computed by pricing the API's reported tokens at published list rates. Checking against the usage
+dashboard showed $19.70 actually billed — the ledger overstated by 58%. The published rates were
+re-verified as correct and request counts lined up, and per-model ratios were consistent (terra
+0.631, sol 0.641), so this is an account-level discount rather than a counting fault. Cost reports
+now carry a `BILLING_CALIBRATION` factor, unset by default, and state plainly that the provider's
+dashboard is authoritative for amounts charged while the ledger is authoritative for relative cost.
+**Reconcile a computed spend figure against the actual bill before quoting it.**
 
 ## 7. What is still open
 

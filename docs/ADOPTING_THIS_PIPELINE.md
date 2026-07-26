@@ -23,9 +23,16 @@ What it is **not**: a finished cataloging system. There is no UI, no authenticat
 database. It is a script you run over a directory of images, and a set of guardrails that keep it
 from inventing things.
 
-**Cost, measured:** about **$0.09 per image** / **$0.22 per item** on a mid-tier model with
-full-resolution reading. A 316-image batch cost $28.38. Budget 20–25% on top for the pilot and
-diagnostic runs you will need.
+**Cost, measured:** about **$0.06 per image** / **$0.14 per item** on a mid-tier model with
+full-resolution reading. A 316-image batch was billed $17.95; $19.70 covered everything including
+pilots and diagnostics. Budget 20–25% on top of your batch estimate for the pilot runs you will need.
+
+**Reconcile against your provider's dashboard before you quote a number to anyone.** Pricing the
+API's own reported token counts at published list rates overstated this account's bill by 58% —
+$31.15 computed against $19.70 charged. The published rates were correct and the token counts came
+from the API itself, so the gap is an account-level discount that no code can see. `app/cost.py` has
+a `BILLING_CALIBRATION` factor for this, deliberately unset by default so the mismatch is visible
+rather than silently papered over.
 
 ---
 
@@ -308,9 +315,10 @@ a batch. Know what it cannot do:
 ## 8. If your repository is public
 
 Ours is, and the source documents were not safe to commit: an email thread carrying colleagues'
-addresses, and internal review documents. `docs/source/` is gitignored except its README, which lists
-what belongs there and where each document's content was extracted to. Do the same before you commit
-anything from a shared drive, and scan for addresses in what you *do* commit.
+addresses, and internal review documents. They live in a gitignored `docs/source/`, with their
+*content* extracted into committed, PII-free artifacts — a policy turned into a rule table, a review
+turned into a test fixture. Do the same before you commit anything from a shared drive, and scan for
+addresses in what you do commit. Committed prose should name roles, not people.
 
 ---
 

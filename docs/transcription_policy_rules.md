@@ -1,7 +1,8 @@
 # Transcription Policy → Machine-Checkable Rules
 
 Derived from **DAAHO Transcription Policy (FINAL)**, §2 "Transcribing Written Documents".
-The authoritative document is the policy itself (see `docs/source/README.md`); this file is the
+The authoritative document is the policy itself, kept locally in the gitignored
+`docs/source/`; this file is the
 engineering extraction — the rules an automated checker and the extraction prompt both consume.
 
 §3 (audio/film) and §5 (translation) are out of scope for this image pipeline.

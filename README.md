@@ -34,13 +34,18 @@ Alongside every run: a manifest of per-item outcomes, a cost ledger, and a polic
 | | |
 |---|---|
 | Current batch | 316 images → **128 archival items** |
-| Cost | **$28.38** — $0.22 per record, $0.09 per image |
+| Cost | **$17.95** — $0.14 per record, $0.057 per image |
 | Records flagged for human review | 10 of 128 |
 | Policy violations | 0 errors |
 | Tests | 48, all offline |
 
 Multi-page documents and recto/verso pairs become **one** record whose transcript spans all pages, so
 image count and record count differ.
+
+Costs are what was actually billed. Pricing the API's own reported token counts at published list
+rates overstated this account's bill by 58%, so the ledger reports both figures and names which is
+which — see `BILLING_CALIBRATION` in `app/cost.py`. **The provider's usage dashboard is authoritative
+for amounts charged**; the ledger is authoritative for relative cost, which holds either way.
 
 ---
 

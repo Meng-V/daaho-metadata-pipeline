@@ -425,7 +425,7 @@ are both lock-guarded, since a torn concurrent write would corrupt the accountin
 **Decided:** 2026-07-25 by Meng Qu (project lead)
 **Status:** active
 
-`AI_Generated_Metadata_Test_Apr_21.xlsx` — the sheet recorded as missing in `docs/source/README.md`
+`AI_Generated_Metadata_Test_Apr_21.xlsx` — the April sheet previously recorded as missing
 — was recovered, so the current pipeline can finally be compared against the one it replaces. Both
 produce the same 31 unique columns. Agreement on the 19 overlapping pilot items, after the fixes
 below:

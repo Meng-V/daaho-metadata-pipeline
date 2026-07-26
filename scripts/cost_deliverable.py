@@ -20,7 +20,15 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from app.cost import PRICING_SOURCE, PRICING_VERIFIED_ON, TIERS, load_ledger  # noqa: E402
+from app.cost import (  # noqa: E402
+    BILLING_CALIBRATION,
+    CALIBRATION_NOTE,
+    CALIBRATION_OBSERVED_ON,
+    PRICING_SOURCE,
+    PRICING_VERIFIED_ON,
+    TIERS,
+    load_ledger,
+)
 
 # Runs other than the delivered batch, with what each was for. Anything not listed still appears in
 # the summary, just without a description.
@@ -63,7 +71,7 @@ def per_item_rows(out_dir: Path):
             "Images in item": ctx.get("page_count") or 1,
             "Model tier": "/".join(sorted(entry["tiers"])) or "-",
             "AI requests": entry["calls"],
-            "Cost USD": f"{entry['cost']:.4f}",
+            "_raw_cost": entry["cost"],   # list price; calibration applied once, at write time
             "Transcript confidence": "" if confidence is None else confidence,
             "Needs human review": "YES" if (confidence is not None and confidence < 70) else "",
             "Vocabulary terms rejected": "YES" if any(n.startswith("Rejected") for n in notes) else "",
@@ -82,13 +90,19 @@ def main() -> int:
     if not rows:
         sys.exit(f"no records found in {args.out_dir}")
 
+    cal = BILLING_CALIBRATION
+    delivered = sum(r["_raw_cost"] for r in rows)
+
+    # Column order puts Cost USD where a reader expects it, after AI requests.
+    fields = ["Record ID", "Item", "Title", "Images in item", "Model tier", "AI requests",
+              "Cost USD", "Transcript confidence", "Needs human review",
+              "Vocabulary terms rejected"]
     item_csv = args.out_dir / "cost_per_item.csv"
     with item_csv.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
-        writer.writerows(rows)
-
-    delivered = sum(float(r["Cost USD"]) for r in rows)
+        for row in rows:
+            writer.writerow({**row, "Cost USD": f"{row['_raw_cost'] * (cal or 1):.4f}"})
     flagged = sum(1 for r in rows if r["Needs human review"])
     images = sum(int(r["Images in item"]) for r in rows)
     live_items = {r["Item"] for r in rows}
@@ -117,23 +131,31 @@ def main() -> int:
         by_tier[tier]["calls"] += 1
         by_tier[tier]["items"].add(row["item_id"])
 
+    def money(value: float) -> str:
+        return f"{value * cal:.2f}" if cal else f"{value:.2f}"
+
     summary = [
         ["DAAHO AI metadata - cost summary", ""],
-        ["Pricing verified", PRICING_VERIFIED_ON],
         ["Pricing source", PRICING_SOURCE],
+        ["List prices verified", PRICING_VERIFIED_ON],
+        ["Figures below are", "actual billed (calibrated)" if cal else "LIST PRICE - see caveat"],
+        ["", ""],
+        ["IMPORTANT", CALIBRATION_NOTE],
+        ["Calibration factor applied", f"{cal:.4f}" if cal else "none - figures are list price"],
+        ["Calibration observed on", CALIBRATION_OBSERVED_ON if cal else ""],
         ["", ""],
         ["DELIVERED BATCH", ""],
         ["Catalog records", len(rows)],
         ["Images covered", images],
-        ["Cost of the delivered records USD", f"{delivered:.2f}"],
-        ["Average cost per record USD", f"{delivered / len(rows):.4f}"],
-        ["Average cost per image USD", f"{delivered / images:.4f}"],
+        ["Cost of the delivered records USD", money(delivered)],
+        ["Average cost per record USD", f"{delivered / len(rows) * (cal or 1):.4f}"],
+        ["Average cost per image USD", f"{delivered / images * (cal or 1):.4f}"],
         ["Records flagged for human review", flagged],
         ["", ""],
-        ["Superseded work in this batch USD", f"{superseded:.2f}",
+        ["Superseded work in this batch USD", money(superseded),
          f"{superseded_calls} requests that were redone after two bugs were fixed mid-effort "
          f"(item grouping, output naming); real spend, but not attributable to a delivered record"],
-        ["Batch total USD", f"{delivered + superseded:.2f}", "delivered + superseded"],
+        ["Batch total USD", money(delivered + superseded), "delivered + superseded"],
         ["", ""],
         ["BY MODEL TIER", "records", "AI requests", "cost USD", "avg per record", "used for"],
     ]
@@ -143,8 +165,8 @@ def main() -> int:
         bucket = by_tier[tier]
         count = len(bucket["items"])
         summary.append([
-            TIERS[tier].model_id, count, bucket["calls"], f"{bucket['cost']:.2f}",
-            f"{bucket['cost'] / max(1, count):.4f}", TIERS[tier].intent,
+            TIERS[tier].model_id, count, bucket["calls"], money(bucket["cost"]),
+            f"{bucket['cost'] / max(1, count) * (cal or 1):.4f}", TIERS[tier].intent,
         ])
     both = sum(1 for r in rows if "/" in r["Model tier"])
     if both:
@@ -166,7 +188,7 @@ def main() -> int:
         if call_type not in by_type:
             continue
         bucket = by_type[call_type]
-        summary.append([call_type, bucket["calls"], f"{bucket['cost']:.2f}",
+        summary.append([call_type, bucket["calls"], money(bucket["cost"]),
                         labels.get(call_type, "")])
 
     # Whole-effort total, including the runs that were superseded or thrown away.
@@ -179,11 +201,11 @@ def main() -> int:
         cost = sum(float(r.get("cost_total") or 0.0) for r in records)
         grand += cost
         name = Path(path).parent.name
-        summary.append([name, len({r["item_id"] for r in records}), f"{cost:.2f}",
+        summary.append([name, len({r["item_id"] for r in records}), money(cost),
                         RUN_NOTES.get(name, "")])
     summary += [
         ["", ""],
-        ["TOTAL SPENT, ALL RUNS", "", f"{grand:.2f}",
+        ["TOTAL SPENT, ALL RUNS", "", money(grand),
          "Includes diagnostic runs and superseded batches, not just the delivered records"],
     ]
 
@@ -193,7 +215,8 @@ def main() -> int:
 
     print(f"wrote {item_csv}   ({len(rows)} records)")
     print(f"wrote {summary_csv}")
-    print(f"\ndelivered batch ${delivered:.2f} | all runs ${grand:.2f}")
+    label = "calibrated" if cal else "LIST PRICE, uncalibrated"
+    print(f"\ndelivered batch ${delivered * (cal or 1):.2f} | all runs ${grand * (cal or 1):.2f}  ({label})")
     return 0
 
 
