@@ -553,6 +553,39 @@ def _policy_defaults(
     return merged
 
 
+_REJECTION_NOTES = {
+    "subjects": "Rejected subject terms absent from the approved FAST list:",
+    "genre": "Rejected genre terms absent from the approved AAT list:",
+}
+
+
+def _reoffer_rejected_terms(md: Dict[str, Any], previous_notes: List[str]) -> Dict[str, List[str]]:
+    """Put previously rejected terms back on the list field so enforcement can re-judge them.
+
+    Returns {field: [terms re-offered]}. Order matters: surviving terms stay first, so if the
+    vocabulary still rejects the re-offered ones nothing changes.
+    """
+    restored: Dict[str, List[str]] = {}
+    for field, prefix in _REJECTION_NOTES.items():
+        terms: List[str] = []
+        for note in previous_notes:
+            if not note.startswith(prefix):
+                continue
+            for term in note[len(prefix):].split(";"):
+                term = term.strip()
+                if term and term not in terms:
+                    terms.append(term)
+        if not terms:
+            continue
+        current = md.get(field)
+        current = list(current) if isinstance(current, list) else []
+        fresh = [t for t in terms if t not in current]
+        if fresh:
+            md[field] = current + fresh
+            restored[field] = fresh
+    return restored
+
+
 def rebuild_existing_outputs(
     out_dir: str,
     defaults: Dict[str, Any],
@@ -576,6 +609,14 @@ def rebuild_existing_outputs(
 
         md = raw.get("metadata", raw)
         context = raw.get("context", {})
+
+        # Re-offer terms a previous run rejected. Enforcement removes out-of-vocabulary terms from
+        # the metadata, so after a vocabulary expansion a plain rebuild could only recover values
+        # still present -- it could not restore what the model originally proposed. D-010 records
+        # every rejection by name in policy_notes precisely so nothing is lost; this reads them
+        # back and lets the current vocabulary judge them again.
+        restored = _reoffer_rejected_terms(md, context.get("policy_notes") or [])
+
         review_notes: List[str] = []
         if apply_reviews:
             review_path = out_path / f"{json_file.stem.replace('.loc15', '')}.review.json"
@@ -610,6 +651,11 @@ def rebuild_existing_outputs(
         if preserved:
             policy_notes = policy_notes + [
                 "Preserved existing Tier 3 values on rebuild: " + ", ".join(sorted(preserved))
+            ]
+        if restored:
+            policy_notes = policy_notes + [
+                "Re-offered previously rejected terms to the current vocabulary: "
+                + "; ".join(f"{field}={', '.join(terms)}" for field, terms in sorted(restored.items()))
             ]
         subject_notes = _enforce_approved_subjects(md, approved_subjects)
         if subject_notes:

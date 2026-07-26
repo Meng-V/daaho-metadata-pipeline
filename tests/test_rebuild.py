@@ -131,5 +131,59 @@ class RebuildTier3Tests(unittest.TestCase):
             self.assertEqual(first["transcript"], second["transcript"])
 
 
+class RebuildReoffersRejectedTermsTests(unittest.TestCase):
+    """After a vocabulary expansion, a rebuild must recover terms the previous run discarded.
+
+    Enforcement strips out-of-vocabulary terms from the metadata, so they only survive as text in
+    policy_notes. Without reading them back, expanding the vocabulary would help future runs but
+    could not repair existing records -- which is the whole point of the expand-then-rebuild loop.
+    """
+
+    def _with_rejection_note(self, subjects, rejected):
+        envelope = _envelope(subjects=list(subjects))
+        envelope["context"]["policy_notes"] = [
+            "Rejected subject terms absent from the approved FAST list: " + "; ".join(rejected)
+        ]
+        return envelope
+
+    def test_previously_rejected_term_returns_once_vocab_covers_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "A.loc15.json"
+            path.write_text(json.dumps(
+                self._with_rejection_note(["Correspondence"], ["Japan", "minorities"])
+            ), encoding="utf-8")
+
+            rebuild_existing_outputs(
+                out_dir=tmp, defaults=dict(EMPTY_DEFAULTS), apply_reviews=False,
+                approved_places=set(),
+                approved_subjects={"Correspondence", "Japan", "minorities"},
+                approved_genre={"correspondence"}, online_vocab_advisory=False,
+            )
+            envelope = json.loads(path.read_text())
+            self.assertEqual(sorted(envelope["metadata"]["subjects"]),
+                             ["Correspondence", "Japan", "minorities"])
+            self.assertTrue(any("Re-offered previously rejected terms" in n
+                                for n in envelope["context"]["policy_notes"]))
+
+    def test_still_unapproved_terms_stay_out_and_stay_recorded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "B.loc15.json"
+            path.write_text(json.dumps(
+                self._with_rejection_note(["Correspondence"], ["Railroads"])
+            ), encoding="utf-8")
+
+            for _ in range(2):  # idempotent across repeated rebuilds
+                rebuild_existing_outputs(
+                    out_dir=tmp, defaults=dict(EMPTY_DEFAULTS), apply_reviews=False,
+                    approved_places=set(), approved_subjects={"Correspondence"},
+                    approved_genre={"correspondence"}, online_vocab_advisory=False,
+                )
+            envelope = json.loads(path.read_text())
+            self.assertEqual(envelope["metadata"]["subjects"], ["Correspondence"])
+            notes = envelope["context"]["policy_notes"]
+            self.assertTrue(any("Railroads" in n and n.startswith("Rejected subject") for n in notes),
+                            "the rejection must still be recorded for the next expansion round")
+
+
 if __name__ == "__main__":
     unittest.main()

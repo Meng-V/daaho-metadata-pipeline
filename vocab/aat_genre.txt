@@ -80,3 +80,9 @@ financial records                       # aat:300027473
 #   applications         -- exact preferred-label match failed; revisit if application forms appear
 #   scholarships         -- a SUBJECT, not a genre. It leaked into the Genre column of the
 #                           January 2026 CSV, which is part of why this list exists.
+
+# --- Added 2026-07-25 from out_batch: verified against authority file ---
+business cards           # aat:300026767  (x1 in run)
+lists (document genres)  # aat:300027119  (x1 in run)
+newsletters              # aat:300026652  (x1 in run)
+speeches (documents)     # aat:300026671  (x1 in run)
