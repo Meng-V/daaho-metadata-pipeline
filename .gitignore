@@ -202,3 +202,7 @@ out_v4_sol/
 out_cap24/
 out_cap15/
 out_fix/
+
+# Local batch staging and triage output
+images/
+images_triage.csv
