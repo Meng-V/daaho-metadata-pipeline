@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "title": "Upham itinerary document, undated",
+    "creator": null,
+    "contributors": null,
+    "correspondents": null,
+    "publisher": null,
+    "date": null,
+    "place": "Ohio--Oxford",
+    "language": null,
+    "subjects": [
+      "correspondence"
+    ],
+    "theme": null,
+    "genre": [
+      "itineraries"
+    ],
+    "keywords": null,
+    "decade": null,
+    "description": "Document detailing the travel itinerary for Upham, listing destinations and addresses of American Express branches from December to March.",
+    "collection": null,
+    "series": null,
+    "folder": null,
+    "box": null,
+    "format": null,
+    "medium": null,
+    "type": null,
+    "rights": null,
+    "repository": null,
+    "identifier": null,
+    "call_number": null,
+    "digital_identifier": null,
+    "reproduction_number": null,
+    "permalink": null,
+    "digital_collection": null,
+    "digital_publisher": null,
+    "digitized": null,
+    "transcript": "Upham Itinerary\n\nYokohama and Japan\nDecember 6 - 19\n\nManila\nDecember 27 - January 5\n\nSingapore\nJanuary 9 - 27\n\nCalcutta\nFebruary 6 - 7\n\nBombay\nFebruary 17 - 18\n\nCairo\nFebruary 28 - March 14\n\nNaples and Italy\nMarch 19 - April 10\n\nAddress\n\nAmerican Express Co.\n7 Nihon Odori, Nakku\n(P. O. Box 407)\nYokohama, Japan\n\nAmerican Express Co.\n95 Plaza Moraga\n(P. O. Box 1463)\nManila, P. I.\n\nAmerican Express Co.\nNo. 1, Collyer Quay\nSingapore, Straits Settlements\n\nAmerican Express Co.\n14-15 Government Place, East\n(P. O. Box 2311)\nCalcutta, India\n\nAmerican Express Co.\n82-84 Esplanade Road, Fort\n(P. O. Box 507)\nBombay, India\n\nAmerican Express Co.\nContinental Savoy Bldg.\n(P. O. Box 2160)\nCairo, Egypt\n\nAmerican Express Co.\n23a Piazza dei Martiri\nNaples, Italy\n\nAmerican Express Co.\nVia Balbi (Hotel Colombia)\nGenoa, Italy\n\nMailing dates\nfrom Oxford, Ohio\n\nNovember 17 - 24\n\nNovember 24 -\nDecember 1\n\nDecember 1 - 14\n\nDecember 14 -\nJanuary 1\n\nJanuary 1 - 21\n\nJanuary 21 -\nFebruary 28\n\nFebruary 28 - March 15\n\nMarch 15 - 30",
+    "text_reading": null,
+    "generated_title": null,
+    "field_confidence": null
+  },
+  "metadata_tiers": {
+    "tier1": {
+      "transcript": "Upham Itinerary\n\nYokohama and Japan\nDecember 6 - 19\n\nManila\nDecember 27 - January 5\n\nSingapore\nJanuary 9 - 27\n\nCalcutta\nFebruary 6 - 7\n\nBombay\nFebruary 17 - 18\n\nCairo\nFebruary 28 - March 14\n\nNaples and Italy\nMarch 19 - April 10\n\nAddress\n\nAmerican Express Co.\n7 Nihon Odori, Nakku\n(P. O. Box 407)\nYokohama, Japan\n\nAmerican Express Co.\n95 Plaza Moraga\n(P. O. Box 1463)\nManila, P. I.\n\nAmerican Express Co.\nNo. 1, Collyer Quay\nSingapore, Straits Settlements\n\nAmerican Express Co.\n14-15 Government Place, East\n(P. O. Box 2311)\nCalcutta, India\n\nAmerican Express Co.\n82-84 Esplanade Road, Fort\n(P. O. Box 507)\nBombay, India\n\nAmerican Express Co.\nContinental Savoy Bldg.\n(P. O. Box 2160)\nCairo, Egypt\n\nAmerican Express Co.\n23a Piazza dei Martiri\nNaples, Italy\n\nAmerican Express Co.\nVia Balbi (Hotel Colombia)\nGenoa, Italy\n\nMailing dates\nfrom Oxford, Ohio\n\nNovember 17 - 24\n\nNovember 24 -\nDecember 1\n\nDecember 1 - 14\n\nDecember 14 -\nJanuary 1\n\nJanuary 1 - 21\n\nJanuary 21 -\nFebruary 28\n\nFebruary 28 - March 15\n\nMarch 15 - 30",
+      "text_reading": null,
+      "description": "Document detailing the travel itinerary for Upham, listing destinations and addresses of American Express branches from December to March.",
+      "title": "Upham itinerary document, undated",
+      "generated_title": null,
+      "date": null,
+      "contributors": null,
+      "correspondents": null,
+      "place": "Ohio--Oxford",
+      "keywords": null,
+      "decade": null
+    },
+    "tier2": {
+      "subjects": null,
+      "genre": null,
+      "creator": null,
+      "publisher": null,
+      "theme": null
+    },
+    "tier3": {
+      "rights": null,
+      "repository": null,
+      "collection": null,
+      "series": null,
+      "folder": null,
+      "box": null,
+      "identifier": null,
+      "call_number": null,
+      "digital_identifier": null,
+      "reproduction_number": null,
+      "permalink": null,
+      "digital_collection": null,
+      "digital_publisher": null,
+      "digitized": null
+    }
+  },
+  "field_provenance": {
+    "transcript": "OCR Transcript",
+    "text_reading": "OCR Text Reading",
+    "description": "AI-Generated Summary",
+    "title": "AI-Generated Title",
+    "generated_title": "AI-Generated Title (Alternate)",
+    "date": "AI-Inferred Date",
+    "contributors": "AI-Extracted Names (People)",
+    "correspondents": "AI-Extracted Names (People)",
+    "place": "AI-Extracted Places",
+    "keywords": "AI-Generated Keywords",
+    "decade": "AI-Inferred Decade",
+    "subjects": "AI-Proposed Subject",
+    "genre": "AI-Proposed Genre",
+    "creator": "AI-Proposed Creator",
+    "publisher": "AI-Proposed Publisher",
+    "theme": "AI-Proposed Theme",
+    "rights": "Human-only Rights (blank)",
+    "repository": "Human-only Repository (blank)",
+    "collection": "Human-only Collection (blank)",
+    "series": "Human-only Series (blank)",
+    "folder": "Human-only Folder (blank)",
+    "box": "Human-only Box (blank)",
+    "identifier": "Human-only Identifier (blank)",
+    "call_number": "Human-only Call Number (blank)",
+    "digital_identifier": "Human-only Digital Identifier (blank)",
+    "reproduction_number": "Human-only Reproduction Number (blank)",
+    "permalink": "Human-only Permalink (blank)",
+    "digital_collection": "Human-only Digital Collection (blank)",
+    "digital_publisher": "Human-only Digital Publisher (blank)",
+    "digitized": "Human-only Digitized Flag (blank)"
+  },
+  "context": {
+    "filename": "BC-0692_Recto.jpg",
+    "processing_confidence": 85.0,
+    "model": "gpt-4o",
+    "prompt_version": "loc15_v2",
+    "schema_version": "loc15_schema_v2",
+    "validation_core": {
+      "ok": true,
+      "errors": [],
+      "warnings": []
+    },
+    "validation_evidence_qc": {
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "signals": {
+        "header_dates": [],
+        "header_places": []
+      }
+    },
+    "title_derivation": {
+      "raw_title": "Upham itinerary document, undated",
+      "normalized_title": "Upham itinerary document, undated",
+      "applied": false,
+      "normalized_title_validation": {
+        "title_ok": true,
+        "title_error_codes": []
+      }
+    },
+    "policy_notes": [
+      "Applied deterministic fallback FAST subject 'Correspondence'."
+    ]
+  }
+}
