@@ -1,7 +1,19 @@
 # Plan — Packaging the Pipeline as a Hosted Web Application
 
-Draft for discussion. Written against the pipeline as it exists today (128-record batch delivered,
-48 tests, measured costs), not against a greenfield idea.
+Written against the pipeline as it exists today (128-record batch delivered, 48 tests, measured
+costs), not against a greenfield idea.
+
+## Decisions taken (2026-08-18)
+
+| Question | Decision |
+|---|---|
+| API key custody | **Encrypted at rest, deleted when the job ends.** Never logged, never returned by the API |
+| Hosting | **Miami-hosted service.** Other institutions arrive with their own OpenAI key |
+| Operator | **Meng Qu, alone.** This is a design constraint, not an aside |
+| Metadata editing | **Export and review in a spreadsheet.** No in-browser editor |
+| Funding | **NHPRC covers the testing phase only — not implementation or ongoing operation** |
+
+The funding constraint is the most consequential of these and is addressed in §7.
 
 ---
 
@@ -189,27 +201,53 @@ better to learn that in week one than in month three.
 
 ---
 
-## 7. Phasing
+## 7. Phasing, and the funding constraint
 
-**Phase 0 — Feasibility spike (1–2 weeks).** Prove the two things that could sink it: generate a
-strict-mode-valid schema from a profile definition, and run one job end to end through a queue with
-a browser-supplied key. Build no UI. If either fails, the plan changes.
+**NHPRC funds the testing phase, not implementation or operation.** The grant can pay to prove this
+works; it cannot pay to run it as a service. That shapes both the scope and the exit plan.
 
-**Phase 1 — MVP (6–10 weeks).** Auth, upload, grouping confirmation, configuration form, processing,
-results table, ZIP export. Miami's profile as the default. Single worker. Target: one external pilot
-institution, hand-held.
+| Phase | Scope | Funding |
+|---|---|---|
+| **0 — Feasibility spike** (1–2 weeks) | Generate a strict-mode-valid schema from a profile definition; run one job end to end through the queue with a browser-supplied key. **No UI.** If either fails, the plan changes | Testing ✓ |
+| **1 — Working service** (8–12 weeks) | Auth, upload, grouping confirmation, template-based configuration, processing, results table, ZIP export, **spend ceilings**, **documentation** | Testing ✓ |
+| **1.5 — Piloted** (4–6 weeks) | TEI export; one or two external institutions running real batches; usage data collected | Testing ✓ |
+| **Later** | Repository connectors, institutional SSO, shared public profiles | **Needs new funding** |
 
-**Phase 2 — Usable by strangers (6–8 weeks).** Self-service profiles, TEI export, review-and-edit
-interface, cost estimation and ceilings, documentation, concurrency. Target: three to five
-institutions without hand-holding.
+Two items moved *forward* from the original Phase 2 because they **reduce** the support burden rather
+than adding to it: spend ceilings prevent the "why was I charged this much" conversation, and
+documentation prevents most of the rest. For a solo operator, anything that answers a question before
+it is asked belongs early.
 
-**Phase 3 — Sustaining.** Repository connectors, institutional SSO, shared public profiles for
-common standards (DACS, Dublin Core), usage analytics for grant reporting.
+### What was cut, and why
 
-Phase 0 and 1 are plausible for one part-time developer over a semester. Phase 2 realistically needs
-either a dedicated student developer or contracted help.
+**The in-browser review-and-edit interface.** It was the largest share of the original Phase 2 and
+carries the highest ongoing support surface of anything proposed here — edit state in the database,
+concurrent edits to one record, autosave, lost work on refresh, and the support requests all of that
+generates. Meanwhile our own 128-record batch was reviewed perfectly well in a spreadsheet. **There
+is no evidence it is worth building.** Revisit only if an institution asks for it specifically.
 
----
+**Arbitrary schema editing**, narrowed to template forking. Instead of a general profile editor,
+ship three or four presets — Dublin Core, our LOC15 profile, a minimal profile — which a user forks
+and adjusts: field names, vocabularies, trust assignments, fixed values. An order of magnitude less
+configuration surface, an order of magnitude less support, and the "your rules, not Miami's"
+commitment in Section 7.12 still holds.
+
+### Survival after the grant
+
+Hosting costs $25–75/month plus operator attention, and the grant will not cover it. Three paths,
+and the first and third should be pursued together:
+
+1. **Absorb it into the Libraries' service budget.** Tens of dollars a month is an easy number; it
+   still needs someone to approve it as a standing commitment.
+2. **Use it as evidence in the next proposal.** A working prototype with real usage data from pilot
+   institutions is materially stronger than a plan.
+3. **Keep the self-hosting path permanently viable.** `docs/ADOPTING_THIS_PIPELINE.md` and the public
+   repository already make this possible. If the hosted service is ever retired, the grant's output
+   does not disappear with it.
+
+The honest framing for the hosted service is therefore **best effort, no service-level agreement**,
+with self-hosting documented as the durable option. That framing is also what makes it defensible to
+run as a solo operator.
 
 ## 8. Running costs
 
@@ -229,15 +267,21 @@ better answer for privacy and for the security review.
 
 ---
 
-## 9. Open questions
+## 9. Remaining open questions
 
-1. **Who is the operator after launch?** If the answer is "Meng, alone," Phase 2 scope needs cutting
-   and the HTMX option deserves serious reconsideration.
-2. **Is this a Miami-hosted service or a grant deliverable others self-host?** Hosting means security
-   review, uptime expectations, and support requests. Publishing a one-click deploy template has none
-   of those obligations and reaches fewer people. This choice changes Phase 1 substantially.
-3. **Do users need a review-and-edit interface, or is export-and-review-in-Excel enough?** Building
-   the editor is a large share of Phase 2. Our own workflow reviewed in a spreadsheet perfectly well.
-4. **Which repository platforms actually matter?** Do not build connectors speculatively.
-5. **Does NHPRC funding cover implementation, or is this a follow-on proposal?** The answer sets the
-   timeline and whether this is designed for one developer or a team.
+The questions about operator, hosting model, editing interface, and funding are answered above. What
+is left:
+
+1. **What does "Miami's own servers" mean concretely?** University on-premise hosting often cannot
+   run containers, terminate TLS for an external service, or open the firewall paths this needs.
+   Confirm with Miami IT whether this is on-premise infrastructure or cloud that Miami pays for —
+   the answer changes §2 substantially, and it is worth asking before Phase 0.
+2. **Security review timing.** Holding third-party API credentials on a university-hosted service
+   very likely requires an IT security review. Start that conversation during Phase 0, not before
+   launch — a late "no" would invalidate the design.
+3. **Which preset profiles ship first?** Dublin Core is the obvious default. The second and third
+   should come from whichever pilot institutions actually sign up.
+4. **Image retention period.** 30 days after export is the working assumption. Shorter reduces both
+   storage cost and how much of other institutions' material Miami holds — which the security review
+   will ask about.
+5. **Which repository platforms matter?** Still: do not build connectors speculatively.

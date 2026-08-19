@@ -53,16 +53,25 @@ SEVERITY_ORDER = {"ERROR": 0, "WARN": 1, "INFO": 2}
 # A date line marks the end of any letterhead region: "October 27, 1938", "20 September 1945",
 # "1937-10-19". Matched loosely -- a false positive only shortens the region we inspect.
 _MONTHS = ("January|February|March|April|May|June|July|August|September|October|November|December")
+# Abbreviated forms appear in received stamps: "SEP 25 1946", "MAR 1 1944". Missing them left the
+# stamp inside the letterhead region, so the institution name printed on the stamp itself was
+# flagged as transcribed letterhead on five items -- a third class of false positive in this checker.
+_MONTHS_ABBR = "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec"
 _DATE_LINE = re.compile(
     rf"^\s*(?:\d{{1,2}}\s+(?:{_MONTHS})\s+\d{{4}}"
     rf"|(?:{_MONTHS})\s+\d{{1,2}},?\s+\d{{4}}"
-    rf"|\d{{4}}-\d{{2}}-\d{{2}})\s*[.,]?\s*$",
+    rf"|(?:{_MONTHS_ABBR})\.?\s+\d{{1,2}},?\s+\d{{4}}"
+    rf"|\d{{4}}-\d{{2}}-\d{{2}})\s*$",
     re.IGNORECASE,
 )
+# A received stamp also opens the region; it is document content, not stationery (R16 requires
+# transcribing stamps), so it must not extend the letterhead scan past itself.
+_STAMP_LINE = re.compile(r"^\s*(RECEIVED|ANSWERED|FILED)\b", re.IGNORECASE)
 
 
 def _looks_like_date_line(line: str) -> bool:
-    return bool(_DATE_LINE.match(line))
+    """True where the letterhead region ends: a date line or the start of a received stamp."""
+    return bool(_DATE_LINE.match(line) or _STAMP_LINE.match(line))
 
 
 def brackets(text: str) -> list:
