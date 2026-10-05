@@ -11,6 +11,11 @@ policy. Output is JSON per item plus a CSV shaped like the collection's upload s
 It is built around a premise: **an empty field a cataloger can see is better than a wrong one they
 cannot.** Values that cannot be grounded in the document are left blank and flagged, never guessed.
 
+The records are published through the
+[DAAHO Portfolio](https://github.com/daaho-miamioh/daaho-portfolio), the project's public exhibit
+site and CMS, which imports this pipeline's output and puts every item through human review before
+it goes public.
+
 ---
 
 ## What it produces
@@ -36,7 +41,7 @@ Alongside every run: a manifest of per-item outcomes, a cost ledger, and a polic
 | Current batch | 316 images → **128 archival items** |
 | Cost | **$17.95** — $0.14 per record, $0.057 per image |
 | Records flagged for human review | 10 of 128 |
-| Policy violations | 0 errors |
+| Policy violations | **18 errors**, down from 41 on the April baseline |
 | Tests | 48, all offline |
 
 Multi-page documents and recto/verso pairs become **one** record whose transcript spans all pages, so

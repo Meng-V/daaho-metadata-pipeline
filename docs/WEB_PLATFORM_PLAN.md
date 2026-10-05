@@ -22,8 +22,8 @@ The funding constraint is the most consequential of these and is addressed in §
 These are measured facts about this pipeline, not preferences. Every stack choice below follows
 from them.
 
-**1.1 Processing is long.** A single archival item takes 30–90 seconds; the 128-item batch took
-roughly 30–40 minutes at 3 workers. This cannot be an HTTP request/response. Vercel serverless
+**1.1 Processing is long.** Measured on the delivered batch: **~120 seconds per API call**, and 316
+images across 128 items took **64.6 minutes at 4 workers**. This cannot be an HTTP request/response. Vercel serverless
 functions cap at 60s (Hobby) / 300s (Pro); AWS Lambda caps at 15 minutes. **A job queue with a
 long-running worker is mandatory** — this single fact eliminates several otherwise attractive
 options.
@@ -46,18 +46,69 @@ needs a specialist to operate will die the same way. **Prefer fewer moving parts
 
 ## 2. Recommended stack
 
-### The recommendation
+### The recommendation (revised 2026-09-10)
+
+Settled after two rejected drafts. The earlier Next.js/Vercel and Next.js/Miami proposals are
+recorded in §2.1 with the reasons they were dropped.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Frontend | **Next.js on Vercel** | Best fit for a multi-step wizard; you already deploy to Vercel; server components handle auth cleanly |
-| API + worker | **FastAPI in one container** on Render / Railway / Fly.io | Same language as the pipeline, imports `app/` directly, no port |
-| Job queue | **Postgres-backed queue** in the same container | Avoids running Redis. At 1–10 concurrent users this is entirely adequate |
-| Database | **Postgres** (Neon / Supabase / provider-managed) | Users, jobs, configs, results |
-| Object storage | **Cloudflare R2** | S3-compatible, **no egress fees** — matters when users download multi-GB result bundles |
-| Auth | **Email magic link** (Auth.js / Clerk) | No password storage. Institutional SSO is the eventual answer, not the MVP one |
+| Frontend | **Vite + React**, built to static files | A form wizard needs no server rendering. Vite emits plain assets that FastAPI serves directly |
+| API + worker | **FastAPI**, `docker compose` on **EC2** | Same language as the pipeline, imports `app/` directly, no port |
+| Job queue | **Postgres queue** (`SELECT … FOR UPDATE SKIP LOCKED`) | ~40 lines, no Redis, no separate uptime story |
+| Database | **RDS PostgreSQL** `db.t4g.micro` | Managed backups and point-in-time recovery; also frees CPU on the app instance |
+| Image staging | **S3**, 24-hour lifecycle rule | See §2.2 — this is staging, not caching |
+| Edge / TLS | **CloudFront** | Free at our volume, and the only way to attach AWS WAF without an ALB |
+| Auth | **Email magic link** | No password storage. Institutional SSO is the eventual answer, not the MVP one |
 
-Two deployments, one language per side, no bespoke infrastructure.
+One instance, one compose file, one language per side, no bespoke infrastructure.
+
+### 2.1 Why not the earlier drafts
+
+**Next.js on Vercel** — rejected because the service must be Miami-hosted, which is a project
+constraint, not a preference.
+
+**Next.js hosted at Miami** — rejected because every Next.js server feature we would have paid for
+in complexity (server components, API routes, middleware) is unused: all business logic is Python.
+What remained was a Node runtime to patch and monitor for no benefit.
+
+**Kubernetes / ECS / Fargate** — rejected by 1.4. `docker compose` on one instance is operable by one
+person. Neither of the others is.
+
+**NAT Gateway** — rejected on cost. At $0.045/hr plus $0.045/GB it exceeds two-thirds of the
+application server's price. The instance sits in a public subnet behind a security group; RDS sits
+in a private subnet and is reached over the VPC.
+
+### 2.2 Staging, not caching
+
+Each image is read exactly once — decode, downsample, base64, send, discard. Nothing is ever
+re-read, so there is no cache workload and **no reason to introduce Redis or a CDN for images**.
+What is needed is somewhere for a batch to live between upload and completion.
+
+S3 over an EBS directory, for four reasons in order of weight:
+
+1. **A lifecycle rule enforces deletion.** "Delete the images when the job ends" is a commitment made
+   to adopting institutions; on S3 it is enforced by infrastructure rather than by a cleanup job that
+   can silently stop running.
+2. **A full disk takes the whole service down.** One failed cleanup on EBS stops Postgres writes and
+   every running job. S3 has no full state.
+3. **The instance becomes replaceable.** Resize, rebuild or move it with no data on board.
+4. **Upload bandwidth stops competing with processing.** Browsers upload straight to S3 by presigned
+   POST; the bytes never touch the application server.
+
+Wrap it behind a four-method storage interface (`put` / `get` / `presign` / `delete`) with a local
+filesystem implementation, so development needs no AWS account.
+
+Two implementation details that are easy to get wrong:
+
+- **Presigned POST, not presigned PUT.** Only POST carries a policy with `content-length-range`, so
+  only POST can enforce the 10 MB per-image cap server-side. The 100-image cap is enforced by the
+  backend simply issuing no more than 100 URLs.
+- **Thumbnails belong in the browser.** The grouping-confirmation step runs in the same browser
+  session that just picked the files, so the originals are still local. Downscale with a canvas for
+  the preview grid. This is faster for the user than waiting on server-side generation and costs the
+  server nothing.
+
 
 ### What I would reject, and why
 
@@ -234,11 +285,11 @@ commitment in Section 7.12 still holds.
 
 ### Survival after the grant
 
-Hosting costs $25–75/month plus operator attention, and the grant will not cover it. Three paths,
+Hosting is an ongoing monthly cost plus operator attention, and the grant will not cover it. Three paths,
 and the first and third should be pursued together:
 
-1. **Absorb it into the Libraries' service budget.** Tens of dollars a month is an easy number; it
-   still needs someone to approve it as a standing commitment.
+1. **Absorb it into the Libraries' service budget.** The monthly cost is small, but it still needs
+   someone to approve it as a standing commitment.
 2. **Use it as evidence in the next proposal.** A working prototype with real usage data from pilot
    institutions is materially stronger than a plan.
 3. **Keep the self-hosting path permanently viable.** `docs/ADOPTING_THIS_PIPELINE.md` and the public
@@ -251,19 +302,20 @@ run as a solo operator.
 
 ## 8. Running costs
 
-With users bringing their own keys, inference cost is zero to you. What remains:
+Users bring their own keys, so inference is not the operator's cost: roughly **$4–6 per 100-image
+batch**, paid by the adopting institution to its own provider.
 
-| Item | Estimate |
-|---|---|
-| Vercel (frontend) | $0–20/mo |
-| Container host (API + worker) | $10–25/mo |
-| Postgres | $0–25/mo |
-| R2 storage | ~$0.015/GB-month; **no egress fees** |
-| **Total** | **roughly $25–75/month** at pilot scale |
+The hosting budget is kept with the grant materials, outside this public repository.
 
-The real cost driver is image retention. A 30-day auto-delete policy after export keeps storage
-trivial and reduces how much of other institutions' material you are holding — which is also the
-better answer for privacy and for the security review.
+At the planned configuration the service supports about **8 concurrent institutions**, each
+completing a 100-image batch in about **8 minutes**. The sizing follows from three measurements, not
+from guesswork: **28 MB** peak memory per worker, **0.29 s** CPU per image, and **~120 s** wall-clock
+per API call. Workers are blocked on the network over 99 % of the time, so concurrency is bounded by
+memory and speed is bounded by the model provider — which is why the server is sized for memory and
+durability rather than CPU.
+
+Image retention is 24 hours by lifecycle rule, not 30 days. The shorter window is the better answer
+for the security review and for how much of other institutions' material Miami holds.
 
 ---
 
@@ -281,7 +333,6 @@ is left:
    launch — a late "no" would invalidate the design.
 3. **Which preset profiles ship first?** Dublin Core is the obvious default. The second and third
    should come from whichever pilot institutions actually sign up.
-4. **Image retention period.** 30 days after export is the working assumption. Shorter reduces both
-   storage cost and how much of other institutions' material Miami holds — which the security review
-   will ask about.
+4. ~~**Image retention period.**~~ Settled: **24 hours**, enforced by an S3 lifecycle rule rather
+   than by application code. See §2.2.
 5. **Which repository platforms matter?** Still: do not build connectors speculatively.
