@@ -22,7 +22,7 @@ Ohio--Cincinnati                        # fst01205142
 Ohio--Columbus                          # fst01205076
 Ohio--Oxford                            # fst01202905
 Ohio--Yellow Springs                    # fst01205526
-Pennsylvania--Philadelphia              # FAST id not returned by the suggest API; form prescribed in the archivist's MAP review and matches FAST's derived headings (Pennsylvania--Philadelphia Region, fst01348890). Confirm by hand.
+Pennsylvania--Philadelphia              # confirmed by hand by the project lead, 2026-10-05; also the form the archivist's MAP review prescribes. (The suggest API does not return this heading's id.)
 Washington (D.C.)                       # fst01204505
 
 # Elsewhere

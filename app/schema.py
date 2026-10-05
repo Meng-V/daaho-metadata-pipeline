@@ -80,8 +80,11 @@ LOC15_SCHEMA: Dict[str, Any] = {
     "properties": {
         "title":  {"type": "string", "minLength": 1, "maxLength": 240},
         "creator":{"type": ["string", "null"], "maxLength": 200},
-        "contributors":{"type": ["array", "null"], "items": {"type": "string"}, "maxItems": 8},
-        "correspondents":{"type": ["array", "null"], "items": {"type": "string"}, "maxItems": 12},
+        # No maxItems on name lists. This schema is sent to the model in strict mode, so a cap would
+        # make it drop people silently at generation time; AAMU-0003 and AAMU-0069 each name 22.
+        # Every person a document names is kept (D-016).
+        "contributors":{"type": ["array", "null"], "items": {"type": "string"}},
+        "correspondents":{"type": ["array", "null"], "items": {"type": "string"}},
         "publisher":{"type": ["string", "null"], "maxLength": 160},
         "date":   {"type": ["string", "null"], "pattern": r"^\d{4}(-\d{2}(-\d{2})?)?$"},
         # An array since schema v3, like every other multi-valued field: sender/creation place first,

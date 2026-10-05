@@ -219,3 +219,19 @@ class RebuildTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NameListsAreNotCapped(unittest.TestCase):
+    """D-016: a schema limit must never remove a person from the record."""
+
+    def test_no_name_field_has_a_maximum(self):
+        from app.schema import LOC15_SCHEMA
+        for field in ("contributors", "correspondents"):
+            with self.subTest(field=field):
+                self.assertNotIn("maxItems", LOC15_SCHEMA["properties"][field])
+
+    def test_a_document_naming_22_people_validates(self):
+        md = _envelope(contributors=[f"Person{i}, Test" for i in range(22)])["metadata"]
+        problems = [e for e in Draft7Validator(__import__("app.schema", fromlist=["LOC15_SCHEMA"]).LOC15_SCHEMA).iter_errors(md)
+                    if list(e.path)[:1] == ["contributors"]]
+        self.assertEqual(problems, [])

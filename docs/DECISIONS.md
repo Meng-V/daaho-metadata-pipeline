@@ -641,5 +641,19 @@ Now:
 Result on the 128-item batch, rebuilt offline: 112 records keep a place (as before D-014; 87 under
 it), every place is an approved FAST heading, and no record reports a rejection that no longer holds.
 
-Open: `Pennsylvania--Philadelphia` is the form the archivist prescribed and matches FAST's derived
-headings, but the suggest API did not return its id; confirm it by hand at fast.oclc.org.
+`Pennsylvania--Philadelphia`, the form the archivist prescribed, was confirmed by hand by the project
+lead on 2026-10-05; the suggest API does not return its id.
+
+### D-016 — Name lists are never capped
+
+**Decided:** 2026-10-05 by Meng Qu (project lead)
+**Status:** active
+
+The schema limited `contributors` to 8 names and `correspondents` to 12. AAMU-0003 and AAMU-0069
+each name 22 people, so both records were flagged as invalid. Nothing was lost in this batch — all 22
+names are in the data, the CSV export and the portfolio — but the same schema is sent to the model in
+strict mode, so on the next paid run a cap could make the model drop people at generation time,
+where no later check can see it.
+
+A schema limit is not a reason to remove a person from the record. Both caps are removed, and
+`tests/test_field_validation.py` fails if a name list is ever capped again.
