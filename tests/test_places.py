@@ -198,3 +198,69 @@ class FastVerificationRequiresAnId(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReviewedPlaces(unittest.TestCase):
+    """D-017: a reviewer can set place; the vocabulary still applies; provenance says who set it."""
+
+    def _record(self, tmp, stem="X-0001", **md):
+        import json
+        base = {
+            "title": "Letter, 1925", "date": "1925-04-24", "decade": "1920-1929",
+            "transcript": "[page 1]\nDear Mr. Huang:", "subjects": ["Correspondence"],
+            "genre": ["correspondence"], "place": None,
+        }
+        base.update(md)
+        path = Path(tmp) / f"{stem}.loc15.json"
+        path.write_text(json.dumps({"metadata": base, "metadata_tiers": {}, "field_provenance": {}, "context": {}}),
+                        encoding="utf-8")
+        return path
+
+    def _rebuild(self, tmp, apply_reviews=True):
+        from app.main import rebuild_existing_outputs
+        rebuild_existing_outputs(
+            out_dir=tmp, defaults={}, apply_reviews=apply_reviews, approved_places=APPROVED,
+            approved_subjects={"Correspondence"}, approved_genre={"correspondence"}, online_vocab_advisory=False,
+        )
+
+    def test_override_accepts_a_list_or_a_semicolon_string(self):
+        from app.ai_metadata import apply_review_overrides, reviewed_fields
+        md, _ = apply_review_overrides({"place": None}, {"overrides": {"place": ["Ohio--Oxford"]}})
+        self.assertEqual(md["place"], ["Ohio--Oxford"])
+        md, _ = apply_review_overrides({"place": None}, {"overrides": {"place": "Ohio--Cincinnati; Ohio--Oxford"}})
+        self.assertEqual(md["place"], ["Ohio--Cincinnati", "Ohio--Oxford"])
+        self.assertEqual(reviewed_fields({"overrides": {"place": ["Ohio--Oxford"]}}), ["place"])
+
+    def test_rebuild_applies_the_review_and_records_why_and_by_whom(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._record(tmp)
+            (Path(tmp) / "X-0001.review.json").write_text(json.dumps({
+                "overrides": {"place": ["Ohio--Oxford"]},
+                "evidence": {"place": "Written by President R. M. Hughes."},
+                "reviewer": "Meng Qu", "reviewed_on": "2026-10-05",
+            }), encoding="utf-8")
+            self._rebuild(tmp)
+            env = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(env["metadata"]["place"], ["Ohio--Oxford"])
+            self.assertEqual(env["field_provenance"]["place"], "Human-Reviewed")
+            note = next(n for n in env["context"]["policy_notes"] if "review override for 'place'" in n)
+            self.assertIn("R. M. Hughes", note)
+            self.assertIn("Meng Qu", note)
+
+            # The reviewed value stays on a later rebuild that does not re-apply reviews.
+            self._rebuild(tmp, apply_reviews=False)
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["metadata"]["place"], ["Ohio--Oxford"])
+
+    def test_a_review_cannot_bypass_the_vocabulary(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._record(tmp)
+            (Path(tmp) / "X-0001.review.json").write_text(
+                json.dumps({"overrides": {"place": ["Ohio--Oxfrod"]}}), encoding="utf-8")
+            self._rebuild(tmp)
+            env = json.loads(path.read_text(encoding="utf-8"))
+            self.assertIsNone(env["metadata"]["place"])
+            self.assertTrue(any("Ohio--Oxfrod" in n for n in env["context"]["policy_notes"]))

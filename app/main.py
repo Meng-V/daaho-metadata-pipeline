@@ -13,6 +13,7 @@ from .ai_metadata import (
     PROMPT_VERSION,
     ExtractionFailed,
     apply_review_overrides,
+    reviewed_fields,
     apply_tier_policy,
     default_detail,
     extract_metadata,
@@ -451,6 +452,13 @@ def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> Lis
     return notes
 
 
+
+def _mark_reviewed(field_provenance: Dict[str, str], review_data: Optional[Dict[str, Any]]) -> None:
+    # A value a person set must not be labelled as machine output. The labels used to be fixed per
+    # field, so an overridden subject still read "AI-Proposed Subject" (D-017).
+    for field in reviewed_fields(review_data):
+        field_provenance[field] = "Human-Reviewed"
+
 def _enforce_approved_places(md: Dict[str, Any], approved_places: Set[str]) -> List[str]:
     # place is an array from schema v3 on (D-014). A record written before that holds one
     # semicolon-joined string; it is converted here, so a rebuild migrates it.
@@ -705,6 +713,7 @@ def rebuild_existing_outputs(
         reoffer_dropped_type(md, context.get("policy_notes") or [])
 
         review_notes: List[str] = []
+        review_data: Optional[Dict[str, Any]] = None
         if apply_reviews:
             review_path = out_path / f"{json_file.stem.replace('.loc15', '')}.review.json"
             if review_path.exists():
@@ -712,6 +721,7 @@ def rebuild_existing_outputs(
                     review_data = json.loads(review_path.read_text(encoding="utf-8"))
                     md, review_notes = apply_review_overrides(md, review_data)
                 except Exception:
+                    review_data = None
                     review_notes.append("Failed to apply review overrides.")
 
         md, derivation_notes = apply_derivations(md)
@@ -735,6 +745,7 @@ def rebuild_existing_outputs(
                     preserved.append(field)
 
         md, metadata_tiers, field_provenance, policy_notes = apply_tier_policy(md, defaults=rebuild_defaults)
+        _mark_reviewed(field_provenance, review_data)
         if preserved:
             policy_notes = policy_notes + [
                 "Preserved existing Tier 3 values on rebuild: " + ", ".join(sorted(preserved))
@@ -985,6 +996,7 @@ def process_item(
     md, merge_notes = _merge_chunk_metadata(chunk_results)
 
     review_notes: List[str] = []
+    review_data: Optional[Dict[str, Any]] = None
     if apply_reviews:
         review_path = Path(out_dir) / f"{output_stem}.review.json"
         if review_path.exists():
@@ -992,6 +1004,7 @@ def process_item(
                 review_data = json.loads(review_path.read_text(encoding="utf-8"))
                 md, review_notes = apply_review_overrides(md, review_data)
             except Exception:
+                review_data = None
                 review_notes.append("Failed to apply review overrides.")
     if merge_notes:
         review_notes = merge_notes + review_notes
@@ -1004,6 +1017,7 @@ def process_item(
     md, metadata_tiers, field_provenance, policy_notes = apply_tier_policy(
         md, defaults=_policy_defaults(defaults or {}, collection, repository, permalink)
     )
+    _mark_reviewed(field_provenance, review_data)
     enforcement_notes, enforcement_context = _enforce_post_extraction(
         md, approved_places, approved_subjects, approved_genre
     )

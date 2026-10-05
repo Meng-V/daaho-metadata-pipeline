@@ -131,10 +131,27 @@ def apply_tier_policy(
     return md, metadata_tiers, field_provenance, policy_notes
 
 
+# Fields a human review file may set. Place joined the Tier 2 fields on 2026-10-05: the model leaves
+# it empty when a document does not state where it was written, yet the archivist's MAP review
+# requires Ohio--Oxford whenever context shows a Miami origin -- a judgment only a reviewer can make
+# (D-017).
+REVIEWABLE_FIELDS = TIER2_FIELDS + ["place"]
+_LIST_FIELDS = {"subjects", "theme", "genre", "place"}
+
+
+def reviewed_fields(review: Optional[Dict[str, Any]]) -> List[str]:
+    """Fields a review file overrides, so their provenance can say a person set them."""
+    overrides = (review or {}).get("overrides") or {}
+    return [field for field in REVIEWABLE_FIELDS if field in overrides]
+
+
 def apply_review_overrides(md: Dict[str, Any], review: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
     overrides = review.get("overrides") or {}
+    evidence = review.get("evidence") or {}
+    reviewer = review.get("reviewer")
+    reviewed_on = review.get("reviewed_on")
     notes: List[str] = []
-    for field in TIER2_FIELDS:
+    for field in REVIEWABLE_FIELDS:
         if field not in overrides:
             continue
         override_val = overrides.get(field)
@@ -142,7 +159,7 @@ def apply_review_overrides(md: Dict[str, Any], review: Dict[str, Any]) -> Tuple[
             override_val = override_val.strip()
             if override_val == "":
                 override_val = None
-        if field in {"subjects", "theme", "genre"}:
+        if field in _LIST_FIELDS:
             if isinstance(override_val, str):
                 parts = [v.strip() for v in override_val.replace("\n", ";").split(";") if v.strip()]
                 override_val = parts or None
@@ -152,7 +169,14 @@ def apply_review_overrides(md: Dict[str, Any], review: Dict[str, Any]) -> Tuple[
             else:
                 override_val = None
         md[field] = override_val
-        notes.append(f"Applied review override for '{field}'.")
+        # Record the value and why, so the audit trail survives without the review file itself.
+        note = f"Applied review override for '{field}': {override_val!r}."
+        if evidence.get(field):
+            note += f" Evidence: {evidence[field]}"
+        by = " ".join(part for part in (f"by {reviewer}" if reviewer else "", f"on {reviewed_on}" if reviewed_on else "") if part)
+        if by:
+            note += f" (Reviewed {by}.)"
+        notes.append(note)
     return md, notes
 
 def _image_to_data_url(img_bytes: bytes, mime: str = "image/png") -> str:

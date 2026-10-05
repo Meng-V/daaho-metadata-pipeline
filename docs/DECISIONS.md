@@ -657,3 +657,48 @@ where no later check can see it.
 
 A schema limit is not a reason to remove a person from the record. Both caps are removed, and
 `tests/test_field_validation.py` fails if a name list is ever capped again.
+
+### D-017 — A reviewer may set place; reviewed values are labelled as reviewed
+
+**Decided:** 2026-10-05 by Meng Qu (project lead)
+**Status:** active
+
+16 records came out with no place. Each was checked against its scan, since letterheads, postmarks
+and stamps are not transcribed (policy R1) and can only be seen there. Five had a place the model
+missed; three need an archivist's judgment; eight genuinely state none.
+
+The five were set through review files (`<stem>.review.json` beside each record), not by editing
+the output, so the change carries its evidence and a rebuild re-derives it. The files live in the
+ignored `out_batch/`; the record of them is here:
+
+| Item | Place | Evidence on the scan |
+|---|---|---|
+| AAMU-0050 | Ohio--Cincinnati | Telegram headed "Cin NL Apr 22", signed "Morris Edwards, Cin Cham of Com"; luncheon at the Netherland Plaza |
+| AAMU-0036 | Ohio--Oxford | Written by President R. M. Hughes ("Mrs. Hughes' and my thanks"); office carbon to Huang at Miami |
+| AAMU-0029 | Ohio--Oxford | Writer at Miami: "his long connection here the University sent flowers" |
+| AAMU-0073c | Ohio--Oxford | The president to Miami faculty about Hasegawa's visit "to be in Oxford ... for Homecoming" |
+| AAMU-0087 | Ohio--Oxford | Internal memoranda between Dean Etheridge and the Foreign Student Adviser |
+
+The last four apply the MAP review's rule to "supply Ohio--Oxford as a location when it is clear
+that the document originates from Miami University through context ... even if it doesn't say it on
+the letter." Approved by the project lead; the evidence was read from the scans by Claude.
+
+Left for an archivist: BC-0897 (a Miami-typed copy of a YMCA secretary's letter, original place not
+stated), AAMU-0068 (unsigned carbon recommendation), AAMU-0069 (student paper naming no institution).
+
+Mechanism:
+
+- **`place` is now reviewable** (`REVIEWABLE_FIELDS` in `app/ai_metadata.py`), alongside the five
+  Tier 2 fields.
+- **A review cannot bypass the vocabulary.** The override is applied before enforcement, so a
+  reviewed place that is not an approved FAST heading is rejected and recorded like any other.
+- **Reviewed values are labelled `Human-Reviewed`.** Provenance labels were fixed per field, so an
+  overridden subject still read "AI-Proposed Subject". The override note now records the value, the
+  evidence, the reviewer and the date.
+
+Found while checking the scans, not yet corrected — for review in the portfolio CMS: AAMU-0050's
+transcript marks a legible telegram illegible; AAMU-0066 is signed "O Ito" (likely the O. Ito of
+AAMU-0068), not "Otto"; AAMU-0068 is dated May 11, 1926, not May 10; AAMU-0028's first page is
+misread ("Marie Marshall" as "Miami Itinerary", "Miss Peggy Lou Upham" as "Miami University");
+items over six pages restart page markers at `[page 1]` in their second chunk; AAMU-0087 holds two
+memoranda but is described as one.
