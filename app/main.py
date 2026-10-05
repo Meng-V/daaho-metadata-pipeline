@@ -27,6 +27,15 @@ from .cost import (
 )
 from .derivations import apply_derivations, derive_normalized_title
 from .evidence_qc import run_evidence_qc
+from .places import canonical_place
+from .field_validation import (
+    drop_type,
+    name_rejection_notes,
+    place_tokens,
+    reoffer_dropped_type,
+    reoffer_rejected_names,
+    validate_name_fields,
+)
 from .grouping import (
     DEFAULT_MAX_PAGES_PER_CALL,
     chunk_pages,
@@ -443,30 +452,24 @@ def _enforce_approved_genre(md: Dict[str, Any], approved_genre: Set[str]) -> Lis
 
 
 def _enforce_approved_places(md: Dict[str, Any], approved_places: Set[str]) -> List[str]:
-    if not approved_places:
-        return []
-
-    place_value = md.get("place")
-    if not isinstance(place_value, str) or not place_value.strip():
+    # place is an array from schema v3 on (D-014). A record written before that holds one
+    # semicolon-joined string; it is converted here, so a rebuild migrates it.
+    tokens = place_tokens(md.get("place"))
+    md["place"] = tokens or None
+    if not approved_places or not tokens:
         return []
 
     notes: List[str] = []
     normalized_places: Dict[str, str] = {place.lower(): place for place in approved_places}
     places: List[str] = []
     rejected: List[str] = []
-    for raw_token in place_value.split(";"):
-        token = " ".join(raw_token.strip().split())
-        if not token:
-            continue
-
+    for token in tokens:
         canonical = token if token in approved_places else None
         if canonical is None:
-            lower_token = token.lower()
-            canonical = normalized_places.get(lower_token)
-            if canonical is None and "washington" in lower_token and ("d.c" in lower_token or "district of columbia" in lower_token):
-                dc_place = "District of Columbia--Washington"
-                if dc_place in approved_places:
-                    canonical = dc_place
+            # A known variant ("China--Peking", "District of Columbia--Washington") becomes its FAST
+            # authorized heading; the change is noted below, so the record keeps an audit trail.
+            mapped = canonical_place(token)
+            canonical = mapped if mapped in approved_places else normalized_places.get(token.lower())
 
         if canonical:
             if canonical not in places:
@@ -476,22 +479,69 @@ def _enforce_approved_places(md: Dict[str, Any], approved_places: Set[str]) -> L
         else:
             rejected.append(token)
 
-    # Dropped tokens used to vanish without a trace: a two-token place where only one matched was
-    # silently rewritten to the single match. With a 9-entry pilot place list that loses real data
-    # invisibly, so every rejection is now recorded. Note the asymmetry, which is deliberate: when
-    # NO token matches, the original value is left intact rather than blanked, because an
-    # unvalidated place a cataloger can see beats an empty field.
+    # Places are now held to the same rule as subjects and genre: a token absent from the approved
+    # list is removed and recorded by name, never kept unvalidated. D-010 used to keep a wholly
+    # unmatched place as written, which let "Tokyo--Tokyo" -- not a FAST heading at all -- through
+    # with the same standing as a real one; the list cannot tell it apart from "Japan--Tokyo". The
+    # rejected tokens are re-offered on every rebuild, so growing fast_places.txt restores them.
+    # See docs/DECISIONS.md D-014.
     if rejected:
         notes.append(
             "Place tokens absent from the approved FAST list: " + "; ".join(sorted(set(rejected)))
         )
-    if places and "; ".join(places) != place_value:
-        md["place"] = "; ".join(places)
-    elif not places:
-        notes.append(
-            "NEEDS VOCAB REVIEW: no approved FAST place matched; original value kept unvalidated."
-        )
+    md["place"] = places or None
+    if not places:
+        notes.append("NEEDS VOCAB REVIEW: no approved FAST place matched; left empty rather than guessing.")
     return notes
+
+
+def _enforce_post_extraction(
+    md: Dict[str, Any],
+    approved_places: Set[str],
+    approved_subjects: Set[str],
+    approved_genre: Set[str],
+) -> Tuple[List[str], Dict[str, Any]]:
+    """Controlled vocabularies and field-content checks, shared by extraction and rebuild.
+
+    Returns (policy notes, context entries). A context entry of None means "remove the key", so a
+    rebuild does not carry a stale one forward.
+    """
+    notes: List[str] = []
+    notes += _enforce_approved_subjects(md, approved_subjects)
+    notes += _enforce_approved_genre(md, approved_genre)
+    proposed_places = place_tokens(md.get("place"))
+    notes += _enforce_approved_places(md, approved_places)
+    name_rejections = validate_name_fields(md)
+    notes += name_rejection_notes(name_rejections)
+    notes += drop_type(md)
+    context_updates: Dict[str, Any] = {
+        # Rejections are recorded by name in the notes; this keeps the original ORDER as well,
+        # because the first place token means "sender" and a re-offer must not reverse it.
+        "place_as_extracted": proposed_places if proposed_places != place_tokens(md.get("place")) else None,
+        "rejected_names": name_rejections or None,
+    }
+    return notes, context_updates
+
+
+def _refresh_tier_snapshots(md: Dict[str, Any], metadata_tiers: Dict[str, Dict[str, Any]]) -> None:
+    """Make metadata_tiers show the values actually written, not the pre-enforcement ones.
+
+    apply_tier_policy snapshots the tiers before vocabulary and field enforcement run, so the tiers
+    used to keep every rejected subject and genre term (117 mismatches on the 128-item batch) --
+    and would keep a rejected name such as "... Need exact. Wait." in tier1.contributors.
+    Rejections live in policy_notes and context, not in the tiers.
+    """
+    for tier in metadata_tiers.values():
+        for field in tier:
+            tier[field] = md.get(field)
+
+
+def _apply_context_updates(context: Dict[str, Any], updates: Dict[str, Any]) -> None:
+    for key, value in updates.items():
+        if value is None:
+            context.pop(key, None)
+        else:
+            context[key] = value
 
 
 def _build_online_vocab_advisory(md: Dict[str, Any]) -> Dict[str, Any]:
@@ -580,6 +630,7 @@ def _policy_defaults(
 _REJECTION_NOTES = {
     "subjects": "Rejected subject terms absent from the approved FAST list:",
     "genre": "Rejected genre terms absent from the approved AAT list:",
+    "place": "Place tokens absent from the approved FAST list:",
 }
 
 
@@ -602,12 +653,21 @@ def _reoffer_rejected_terms(md: Dict[str, Any], previous_notes: List[str]) -> Di
         if not terms:
             continue
         current = md.get(field)
-        current = list(current) if isinstance(current, list) else []
+        current = place_tokens(current) if field == "place" else list(current) if isinstance(current, list) else []
         fresh = [t for t in terms if t not in current]
         if fresh:
             md[field] = current + fresh
             restored[field] = fresh
     return restored
+
+
+def _reoffer_places_in_order(md: Dict[str, Any], context: Dict[str, Any]) -> None:
+    """Restore the place list as extracted, so re-offered tokens keep their sender-first position."""
+    proposed = context.get("place_as_extracted")
+    if not isinstance(proposed, list) or not proposed:
+        return
+    current = place_tokens(md.get("place"))
+    md["place"] = list(proposed) + [token for token in current if token not in proposed]
 
 
 def rebuild_existing_outputs(
@@ -639,7 +699,10 @@ def rebuild_existing_outputs(
         # still present -- it could not restore what the model originally proposed. D-010 records
         # every rejection by name in policy_notes precisely so nothing is lost; this reads them
         # back and lets the current vocabulary judge them again.
+        _reoffer_places_in_order(md, context)
         restored = _reoffer_rejected_terms(md, context.get("policy_notes") or [])
+        reoffer_rejected_names(md, context.get("rejected_names"))
+        reoffer_dropped_type(md, context.get("policy_notes") or [])
 
         review_notes: List[str] = []
         if apply_reviews:
@@ -681,15 +744,12 @@ def rebuild_existing_outputs(
                 "Re-offered previously rejected terms to the current vocabulary: "
                 + "; ".join(f"{field}={', '.join(terms)}" for field, terms in sorted(restored.items()))
             ]
-        subject_notes = _enforce_approved_subjects(md, approved_subjects)
-        if subject_notes:
-            policy_notes = policy_notes + subject_notes
-        genre_notes = _enforce_approved_genre(md, approved_genre)
-        if genre_notes:
-            policy_notes = policy_notes + genre_notes
-        place_notes = _enforce_approved_places(md, approved_places)
-        if place_notes:
-            policy_notes = policy_notes + place_notes
+        enforcement_notes, enforcement_context = _enforce_post_extraction(
+            md, approved_places, approved_subjects, approved_genre
+        )
+        policy_notes = policy_notes + enforcement_notes
+        _refresh_tier_snapshots(md, metadata_tiers)
+        _apply_context_updates(context, enforcement_context)
 
         context.update(
             _apply_validation(
@@ -716,8 +776,14 @@ def rebuild_existing_outputs(
             context["derivation_notes"] = derivation_notes
         if title_notes:
             context["title_derivation"]["notes"] = title_notes
+        # Every note is regenerated on a rebuild -- rejected terms, names and type are re-offered and
+        # re-judged above -- so the previous list is replaced, never kept. Keeping it whenever the new
+        # list happened to be empty left 13 records reporting rejections that no longer held, e.g.
+        # "France--Avignon" absent from the approved list after it had been approved (D-015).
         if policy_notes or review_notes:
             context["policy_notes"] = policy_notes + review_notes
+        else:
+            context.pop("policy_notes", None)
         context["schema_version"] = SCHEMA_VERSION
         context["rebuilt_from_existing"] = True
 
@@ -934,15 +1000,11 @@ def process_item(
     md, metadata_tiers, field_provenance, policy_notes = apply_tier_policy(
         md, defaults=_policy_defaults(defaults or {}, collection, repository, permalink)
     )
-    subject_notes = _enforce_approved_subjects(md, approved_subjects)
-    if subject_notes:
-        policy_notes = policy_notes + subject_notes
-    genre_notes = _enforce_approved_genre(md, approved_genre)
-    if genre_notes:
-        policy_notes = policy_notes + genre_notes
-    place_notes = _enforce_approved_places(md, approved_places)
-    if place_notes:
-        policy_notes = policy_notes + place_notes
+    enforcement_notes, enforcement_context = _enforce_post_extraction(
+        md, approved_places, approved_subjects, approved_genre
+    )
+    policy_notes = policy_notes + enforcement_notes
+    _refresh_tier_snapshots(md, metadata_tiers)
 
     pages_context = []
     for page, (page_bytes, page_mime), page_label_text in zip(present, images, labels):
@@ -973,6 +1035,7 @@ def process_item(
     }
     if missing_pages:
         context["missing_pages"] = missing_pages
+    _apply_context_updates(context, enforcement_context)
     if ledger:
         context["cost_usd"] = ledger.total_for(item_id)
     if summary_example_ids:
@@ -1038,6 +1101,7 @@ def process_item(
         # drifted past the pilot vocabulary.
         vocab_notes = [n for n in (policy_notes or [])
                        if "NEEDS VOCAB REVIEW" in n or n.startswith(("Rejected subject", "Rejected genre", "Place tokens absent"))]
+        name_notes = [n for n in (policy_notes or []) if n.startswith("NEEDS NAME REVIEW")]
         manifest.add(
             item_id, "ok",
             pages=len(present),
@@ -1046,6 +1110,8 @@ def process_item(
             transcript_confidence=confidence,
             needs_vocab_review=bool(vocab_notes),
             vocab_notes=vocab_notes or None,
+            needs_name_review=bool(name_notes),
+            name_notes=name_notes or None,
             validation_error=bool(validation_error),
         )
     return "ok"

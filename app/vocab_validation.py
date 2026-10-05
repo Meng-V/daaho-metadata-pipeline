@@ -103,7 +103,7 @@ def validate_fast_subject(term: str) -> Dict[str, Any]:
     try:
         resp = requests.get(
             FAST_SUGGEST_URL,
-            params={"query": term, "rows": 10},
+            params={"query": term, "queryReturn": "suggestall,idroot,auth", "rows": 10},
             timeout=_api_timeout(),
         )
         resp.raise_for_status()
@@ -118,6 +118,9 @@ def validate_fast_subject(term: str) -> Dict[str, Any]:
         suggestions = []
         exact_match = False
         for item in items:
+            # Only an entry carrying a FAST id is an authorized heading; a bare label is a
+            # see-reference to some other heading and must not validate (D-015).
+            has_id = bool(item.get("idroot"))
             labels: List[str] = []
             suggestall = item.get("suggestall")
             if isinstance(suggestall, list):
@@ -128,7 +131,7 @@ def validate_fast_subject(term: str) -> Dict[str, Any]:
                     labels.append(value)
             for label in labels:
                 suggestions.append(label)
-                if _normalize_term(label) == normalized:
+                if _normalize_term(label) == normalized and has_id:
                     exact_match = True
         unique_suggestions = list(dict.fromkeys(suggestions))[:10]
         result = _build_fast_result(

@@ -42,7 +42,7 @@ Alongside every run: a manifest of per-item outcomes, a cost ledger, and a polic
 | Cost | **$17.95** — $0.14 per record, $0.057 per image |
 | Records flagged for human review | 10 of 128 |
 | Policy violations | **18 errors**, down from 41 on the April baseline |
-| Tests | 48, all offline |
+| Tests | 81, all offline |
 
 Multi-page documents and recto/verso pairs become **one** record whose transcript spans all pages, so
 image count and record count differ.
@@ -62,7 +62,7 @@ Python 3.10+.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # add your OPENAI_API_KEY
-python3 -m pytest tests/ -q   # 48 tests, no API key needed
+python3 -m pytest tests/ -q   # 63 tests, no API key needed
 ```
 
 Survey a batch before spending anything on it:
@@ -84,6 +84,7 @@ Then review the results:
 
 ```bash
 python3 scripts/policy_lint.py --out-dir ./out_batch --quiet     # transcription policy compliance
+python3 scripts/audit_fields.py --out-dir ./out_batch            # name / place / type field defects
 python3 scripts/cost_deliverable.py --out-dir ./out_batch        # cost CSVs for a handoff
 python3 export_csv.py --out-dir ./out_batch \
     --template out/final_metadata_2026-04-27_handoff.csv --output upload.csv

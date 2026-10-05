@@ -75,7 +75,7 @@ def map_json_to_csv_row(json_data: Dict[str, Any], filename: str) -> Dict[str, s
         "Correspondents": join_list(md.get("correspondents")),
         "Date": md.get("date") or "",
         "Publisher": md.get("publisher") or "",
-        "Location": md.get("place") or "",
+        "Location": join_list(md.get("place")),
         "Summary": md.get("description") or "",
         "Extent": "",  # Not in JSON schema
         "Dimensions": "",  # Not in JSON schema

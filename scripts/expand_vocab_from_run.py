@@ -106,8 +106,10 @@ def verify_fast(term: str, kind: str) -> Tuple[bool, Optional[str], Optional[str
         # `auth` alone silently failed every place lookup, including entries already in the vocab.
         candidates = [doc.get("auth")] + list(doc.get("suggestall") or [])
         for candidate in [c for c in candidates if c]:
-            if " ".join(candidate.lower().split()) == wanted:
-                return True, candidate, (ids[0] if ids else None), []
+            # A label with no FAST id is a see-reference ("China--Peking" -> China--Beijing), not an
+            # authorized heading. Counting it as verified let variant forms into the vocabulary.
+            if " ".join(candidate.lower().split()) == wanted and ids:
+                return True, candidate, ids[0], []
         for candidate in [c for c in candidates if c]:
             if candidate not in others:
                 others.append(candidate)

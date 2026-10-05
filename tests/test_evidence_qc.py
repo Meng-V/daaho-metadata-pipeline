@@ -7,7 +7,8 @@ class EvidenceQCTests(unittest.TestCase):
     def test_find_header_places_canonicalizes_city_case_dc(self):
         hits = find_header_places(["WASHINGTON, D.C."])
         places = [hit.get("fast_place") for hit in hits]
-        self.assertIn("District of Columbia--Washington", places)
+        # Compared in FAST's authorized form, which is what the Location field now holds (D-015).
+        self.assertIn("Washington (D.C.)", places)
 
     def test_find_header_places_strips_address_prefix(self):
         hits = find_header_places(["Address -- Oxford, Ohio"])

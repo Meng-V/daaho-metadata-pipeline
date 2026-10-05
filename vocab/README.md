@@ -2,7 +2,8 @@
 
 These files are deterministic, in-repo controlled lists used by offline validation:
 
-- `fast_places.txt`: approved FAST-style place tokens (`State--City`)
+- `fast_places.txt`: approved FAST authorized place headings, each with its FAST id
+- `fast_place_variants.txt`: variant and historical forms mapped to those headings (`variant => authorized`)
 - `fast_subjects.txt`: approved reviewed subject terms from `Subject (FAST)`
 - `aat_genre.txt`: approved AAT genre terms (38 verified preferred labels)
 
@@ -33,11 +34,16 @@ Qualifiers matter: `letters` and `letters (correspondence)` are different AAT co
 qualified form is preferred. The tail of `aat_genre.txt` records terms that were tested and
 rejected, so they do not get re-added.
 
-## Known gap
+## Places follow FAST (D-015)
 
-`fast_places.txt` (9 entries) and `fast_subjects.txt` (47 entries) are still sized for the 19-image
-pilot. They will under-cover a larger batch — see the note on subject fallback behavior in
-`docs/DECISIONS.md`.
+The standard is FAST itself, per the archivist's MAP review; `fast_places.txt` is a verified cache of
+it. A heading is added only when FAST returns it **with a FAST id** — a label without an id is a
+see-reference (`China--Peking` refers to `China--Beijing`). A form that names a certain place in the
+wrong way goes in `fast_place_variants.txt`, never in `fast_places.txt`; `tests/test_places.py`
+checks that every mapping lands on an approved heading.
+
+`fast_subjects.txt` is still sized for the 19-image pilot and will under-cover a larger batch — see
+the note on subject fallback behavior in `docs/DECISIONS.md`.
 
 Regenerate from a reviewed metadata CSV:
 
@@ -46,5 +52,5 @@ python scripts/build_vocab_from_review_csv.py --input-csv "<path-to-reviewed-csv
 ```
 
 Notes:
-- Place canonicalization currently normalizes common Washington, D.C. variants to `District of Columbia--Washington`.
+- Place variants, including every Washington, D.C. form, map to FAST headings through `fast_place_variants.txt`.
 - Non FAST-style place tokens are dropped by the builder and printed in script output.

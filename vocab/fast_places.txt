@@ -1,9 +1,38 @@
-California--San Francisco
-District of Columbia--Washington
-Japan--Osaka
-Kansas--Wichita
-Massachusetts--Gloucester
-Ohio--Cincinnati
-Ohio--Columbus
-Ohio--Oxford
-Pennsylvania--Philadelphia
+# Approved place headings for the Location field. Every entry is a FAST authorized heading
+# (fast.oclc.org), per the archivist's MAP review: "validate the field against the FAST Subject
+# Heading location". The FAST id follows each heading so it can be re-checked.
+#
+# Variant and historical forms (Peking, District of Columbia--Washington, Tokyo--Tokyo, ...) are not
+# listed here; they map to these headings through fast_place_variants.txt.
+#
+# Re-verify: python3 scripts/expand_vocab_from_run.py (requires a FAST id, not just a label match)
+
+# United States
+California--Los Angeles                 # fst01204540
+California--San Francisco               # fst01204481
+Colorado--Colorado Springs              # fst01205930
+Illinois--Chicago                       # fst01204048
+Kansas--Wichita                         # fst01207210
+Massachusetts--Gloucester               # fst01208694
+Massachusetts--Williamstown             # fst01215172
+Michigan--Highland Park                 # fst01225530
+New York (State)--Long Beach            # fst01220448
+New York (State)--New York              # fst01204333
+Ohio--Cincinnati                        # fst01205142
+Ohio--Columbus                          # fst01205076
+Ohio--Oxford                            # fst01202905
+Ohio--Yellow Springs                    # fst01205526
+Pennsylvania--Philadelphia              # FAST id not returned by the suggest API; form prescribed in the archivist's MAP review and matches FAST's derived headings (Pennsylvania--Philadelphia Region, fst01348890). Confirm by hand.
+Washington (D.C.)                       # fst01204505
+
+# Elsewhere
+Burma--Rangoon                          # fst01208575
+China--Beijing                          # fst01205740
+China--Shanghai                         # fst01205418
+Egypt--Cairo                            # fst01205204
+France--Avignon                         # fst01209584
+Japan--Kōbe-shi                         # fst01207885
+Japan--Osaka                            # fst01207884
+Japan--Tokyo                            # fst01204835
+Philippines--Manila                     # fst01205230
+Singapore                               # fst01205288  (city-state: no State--City form, like Washington (D.C.))

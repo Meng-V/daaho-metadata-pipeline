@@ -171,7 +171,8 @@ and "title" must match what the document image shows.
 3) If both sender and recipient locations are clearly present, include both:
    SenderState--SenderCity; RecipientState--RecipientCity
 4) Never use "City, State" format.
-5) Use the standard form for Washington, D.C.: District of Columbia--Washington
+5) Use FAST authorized headings. Washington, D.C. is Washington (D.C.); New York City is
+   New York (State)--New York; use current names (China--Beijing, not China--Peking).
 
 ================================================================
 === CREATOR ===

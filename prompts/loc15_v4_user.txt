@@ -35,6 +35,9 @@ NAMES, DATES, PLACES:
 1) Where OCR and the image disagree on a spelling, follow the IMAGE.
 2) If a name or date is not confidently legible, leave the field null. Do not normalize an
    unfamiliar name toward a familiar-looking one.
+3) creator, contributors and correspondents hold exactly ONE name per value. Never put two people
+   in one array element, and never write a question, doubt or working note into a name field --
+   omit a name you cannot read instead. Names failing this are discarded after extraction.
 
 TITLE + DATE CONTRACT (strict):
 1) title must be non-empty and in SENTENCE CASE (first word and proper nouns only).
@@ -53,8 +56,8 @@ LOCATION CONTRACT (strict):
 1) place must use FAST-style State--City tokens.
 2) Record the creation/sender location first; Ohio--Oxford for Miami University documents, even
    when established by context rather than stated on the item.
-3) If both sender and recipient locations are present, output both with a semicolon:
-   SenderState--SenderCity; RecipientState--RecipientCity
+3) place is a JSON array with one token per element. If both sender and recipient locations are
+   present, output both, sender first: ["SenderState--SenderCity", "RecipientState--RecipientCity"]
 4) Do not output "City, State" formatting.
 
 DESCRIPTION CONTRACT:
@@ -73,7 +76,7 @@ Creator examples (Last, First - no titles):
 - Pramoj, M.R. Seni
 
 Location examples:
-- District of Columbia--Washington
+- Washington (D.C.)
 - Pennsylvania--Philadelphia; Ohio--Oxford
 
 Subject examples (FAST controlled vocabulary - lowercase except proper nouns):

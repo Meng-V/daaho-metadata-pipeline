@@ -60,13 +60,15 @@ class VocabFallbackTests(unittest.TestCase):
         """A partial match used to silently rewrite the field, losing the unmatched token."""
         md = {"place": "Illinois--Chicago; Ohio--Oxford"}
         notes = _enforce_approved_places(md, self.PLACES)
-        self.assertEqual(md["place"], "Ohio--Oxford")
+        self.assertEqual(md["place"], ["Ohio--Oxford"])
         self.assertIn("Illinois--Chicago", " ".join(notes))
 
-    def test_wholly_unmatched_place_is_kept_unvalidated(self):
+    def test_wholly_unmatched_place_is_left_empty_and_flagged(self):
+        """D-014 replaced D-010's keep-unvalidated asymmetry: places now follow the subject rule."""
         md = {"place": "Illinois--Chicago"}
         notes = _enforce_approved_places(md, self.PLACES)
-        self.assertEqual(md["place"], "Illinois--Chicago")
+        self.assertIsNone(md["place"])
+        self.assertIn("Illinois--Chicago", " ".join(notes))
         self.assertTrue(any("NEEDS VOCAB REVIEW" in n for n in notes))
 
 
