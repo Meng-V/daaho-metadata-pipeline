@@ -2,6 +2,8 @@ import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .derivations import parse_iso_date
+from .field_validation import place_tokens as _place_tokens
+from .places import canonical_place
 
 MONTHS = {
     "january": 1,
@@ -251,7 +253,7 @@ def find_header_places(lines: Sequence[str]) -> List[Dict[str, Any]]:
                 state_name = _normalize_state(state)
                 city_name = _normalize_city(city)
                 if state_name and city_name:
-                    fast_place = f"{state_name}--{city_name}"
+                    fast_place = canonical_place(f"{state_name}--{city_name}")
                     key = (fast_place, idx)
                     if key not in seen:
                         seen.add(key)
@@ -272,7 +274,7 @@ def find_header_places(lines: Sequence[str]) -> List[Dict[str, Any]]:
         state = _normalize_state(match.group(2))
         if not city or not state:
             continue
-        fast_place = f"{state}--{city}"
+        fast_place = canonical_place(f"{state}--{city}")
         key = (fast_place, idx)
         if key in seen:
             continue
@@ -346,8 +348,8 @@ def run_evidence_qc(md: Dict[str, Any], transcript: Optional[str]) -> Dict[str, 
                 )
             )
 
-    place_value = (md.get("place") or "").strip()
-    place_tokens = [token.strip() for token in place_value.split(";") if token.strip()]
+    place_tokens = _place_tokens(md.get("place"))
+    place_value = "; ".join(place_tokens)
     distinct_places = []
     for hit in place_hits:
         fp = hit["fast_place"]

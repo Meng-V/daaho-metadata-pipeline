@@ -26,7 +26,7 @@ def to_sample_row(envelope: Dict[str, Any]) -> Dict[str, str]:
         "Correspondents": join(md.get("correspondents")),
         "Date": md.get("date") or "",
         "Publisher": md.get("publisher") or "",
-        "Location": md.get("place") or "",
+        "Location": join(md.get("place")),
         "Description": md.get("description") or "",
         "Subject": join(md.get("subjects")),
         "Theme": join(md.get("theme")),

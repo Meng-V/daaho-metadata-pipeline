@@ -3,16 +3,13 @@ import argparse
 import csv
 import re
 from pathlib import Path
+import sys
 from typing import Iterable, List, Set, Tuple
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from app.places import canonical_place  # noqa: E402
+
 FAST_PLACE_PATTERN = re.compile(r"^[^;]+--[^;]+$")
-DC_CANONICAL = "District of Columbia--Washington"
-DC_VARIANTS = {
-    "washington (d.c.)": DC_CANONICAL,
-    "washington d.c.": DC_CANONICAL,
-    "washington dc": DC_CANONICAL,
-    "united states--washington d.c.": DC_CANONICAL,
-}
 
 
 def _split_semicolon(value: str) -> List[str]:
@@ -20,11 +17,8 @@ def _split_semicolon(value: str) -> List[str]:
 
 
 def _canonicalize_place(token: str) -> str:
-    collapsed = " ".join(token.strip().split())
-    mapped = DC_VARIANTS.get(collapsed.lower())
-    if mapped:
-        return mapped
-    return collapsed
+    # Variant forms map to their FAST authorized heading through vocab/fast_place_variants.txt.
+    return canonical_place(" ".join(token.strip().split()))
 
 
 def _read_rows(path: Path) -> Iterable[dict]:

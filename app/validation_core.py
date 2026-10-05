@@ -3,18 +3,11 @@ from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Sequence, Set
 
 from .derivations import derive_decade, format_title_date_suffix, parse_iso_date
+from .field_validation import place_tokens
+from .places import canonical_place
 
 PLACE_TOKEN_PATTERN = re.compile(r"^[^;]+--[^;]+$")
 
-DC_CANONICAL = "District of Columbia--Washington"
-DC_VARIANT_MAP = {
-    "washington (d.c.)": DC_CANONICAL,
-    "washington d.c.": DC_CANONICAL,
-    "washington dc": DC_CANONICAL,
-    "district of columbia--washington d.c.": DC_CANONICAL,
-    "united states--washington d.c.": DC_CANONICAL,
-    "massachusetts--glouchester": "Massachusetts--Gloucester",
-}
 
 
 def _issue(
@@ -40,11 +33,6 @@ def _first_alpha_char(value: str) -> Optional[str]:
         if char.isalpha():
             return char
     return None
-
-
-def _canonicalize_place_token(token: str) -> str:
-    normalized = " ".join(token.strip().split()).lower()
-    return DC_VARIANT_MAP.get(normalized, token.strip())
 
 
 def _case_insensitive_suggestions(token: str, approved_places: Set[str]) -> List[str]:
@@ -186,19 +174,14 @@ def validate_core(
             )
         )
 
-    place_value = (md.get("place") or "").strip()
-    if place_value:
-        tokens = [token.strip() for token in place_value.split(";") if token.strip()]
-        if not tokens:
-            errors.append(
-                _issue(
-                    "place",
-                    "missing_required",
-                    "Location is missing after tokenization.",
-                    value=place_value,
-                )
-            )
+    tokens = place_tokens(md.get("place"))
+    if tokens:
         for token in tokens:
+            # An approved heading is valid whatever its shape: FAST's jurisdiction-level headings,
+            # such as "Washington (D.C.)", have no "--" at all. Only unapproved tokens are
+            # held to the State--City pattern.
+            if token in approved_places or canonical_place(token) in approved_places:
+                continue
             if not PLACE_TOKEN_PATTERN.match(token):
                 errors.append(
                     _issue(
@@ -212,7 +195,7 @@ def validate_core(
 
             if approved_places:
                 if token not in approved_places:
-                    canonical = _canonicalize_place_token(token)
+                    canonical = canonical_place(token)
                     if canonical in approved_places:
                         continue
 

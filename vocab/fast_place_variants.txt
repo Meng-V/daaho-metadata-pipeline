@@ -1,0 +1,31 @@
+# Variant place forms -> FAST authorized heading.   Format:  variant => authorized
+#
+# Every target must appear in fast_places.txt (tests/test_places.py enforces this). Matching ignores
+# case and repeated spaces. A mapping belongs here only when the place itself is certain and only the
+# form of the heading is wrong; a place that is merely likely does not belong here.
+
+# Washington, D.C. -- FAST's heading is "Washington (D.C.)". The collection previously used
+# "District of Columbia--Washington", which FAST does not authorize (decision D-015).
+District of Columbia--Washington         => Washington (D.C.)
+District of Columbia--Washington D.C.    => Washington (D.C.)
+United States--Washington D.C.           => Washington (D.C.)
+Washington D.C.                          => Washington (D.C.)
+Washington DC                            => Washington (D.C.)
+
+# FAST qualifies New York State, so the bare state name is not a heading.
+New York--New York                       => New York (State)--New York
+New York--Long Beach                     => New York (State)--Long Beach
+
+# Historical or variant names: FAST lists these only as references to the current heading. The
+# document's own wording stays in the transcript; the controlled field takes the authorized form.
+China--Peking                            => China--Beijing
+Japan--Kobe                              => Japan--Kōbe-shi
+
+# Malformed: the jurisdiction was written as the city. There is one Tokyo.
+Tokyo--Tokyo                             => Japan--Tokyo
+
+# City-states: FAST's heading is the single name.
+Singapore--Singapore                     => Singapore
+
+# Misspelling seen in the April 2026 handoff spreadsheet.
+Massachusetts--Glouchester               => Massachusetts--Gloucester

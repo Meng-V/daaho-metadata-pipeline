@@ -84,7 +84,13 @@ LOC15_SCHEMA: Dict[str, Any] = {
         "correspondents":{"type": ["array", "null"], "items": {"type": "string"}, "maxItems": 12},
         "publisher":{"type": ["string", "null"], "maxLength": 160},
         "date":   {"type": ["string", "null"], "pattern": r"^\d{4}(-\d{2}(-\d{2})?)?$"},
-        "place":  {"type": ["string", "null"], "maxLength": 160, "pattern": r"^([^;]+--[^;]+)(;\s*[^;]+--[^;]+)*$"},
+        # An array since schema v3, like every other multi-valued field: sender/creation place first,
+        # then recipient. Was one semicolon-joined string (docs/DECISIONS.md D-014).
+        # One heading per item: no semicolon (a joined list) and no comma ("Oxford, Ohio"). The pattern
+        # used to require "State--City", which rejects FAST's own headings for D.C. and city-states --
+        # "Washington (D.C.)", "Singapore" -- and flagged 18 valid records. Whether a heading is right
+        # is decided by vocab/fast_places.txt, not by its shape (D-015).
+        "place":  {"type": ["array", "null"], "items": {"type": "string", "maxLength": 80, "pattern": r"^[^;,]+$"}, "maxItems": 6},
         "language":{"type": ["string", "null"], "maxLength": 80},
 
         "subjects": {"type": ["array", "null"], "items": {"type": "string", "maxLength": 80}, "maxItems": 8},
@@ -150,7 +156,7 @@ MAX_OCR_CHARS = 12000
 # and removes a silent-truncation failure mode that would recur on longer documents.
 MAX_OUTPUT_TOKENS = 12000
 DEFAULT_MODEL = "gpt-5.6-terra"
-SCHEMA_VERSION = "loc15_schema_v2"
+SCHEMA_VERSION = "loc15_schema_v3"
 
 # Trust tiers for policy enforcement and labeling (ordered for deterministic output).
 TIER1_FIELDS = [

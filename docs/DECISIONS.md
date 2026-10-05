@@ -377,8 +377,8 @@ Now:
   item as `needs_vocab_review`.
 - Place tokens dropped during canonicalization are recorded too. Previously a two-token place where
   only one matched was silently rewritten to the single match.
-- **Deliberate asymmetry:** when *no* place token matches, the original value is kept unvalidated
-  rather than blanked. An unvalidated place a cataloger can see beats an empty field; for subjects
+- **Deliberate asymmetry** *(superseded for places by D-014, 2026-10-02)*: when *no* place token
+  matches, the original value is kept unvalidated rather than blanked. An unvalidated place a cataloger can see beats an empty field; for subjects
   and genre the reverse holds, because a wrong controlled term is worse than none.
 
 An empty field a cataloger can see is better than a wrong one they cannot. Pinned by
@@ -531,3 +531,115 @@ into a 25.8 MB PNG and a **34.4 MB base64 request body** — then the server dow
 anyway. Now the original file bytes are sent for already-supported formats, with the correct MIME
 type. Same image: **4.0 MB**, an 8.6× reduction, with more detail reaching the model, not less.
 Only TIFF/BMP are converted, and only those may be downscaled (12 MB cap).
+
+---
+
+### D-014 — Name fields hold one name per value; place is an array held to its vocabulary; type is not inferred
+
+**Decided:** 2026-10-02 by Meng Qu (project lead)
+**Status:** active
+
+Importing the 128-item batch into the portfolio site found output that structured outputs cannot
+prevent, because the schema constrains shape, not content:
+
+- **Model reasoning in a name field.** AAMU-0003 contributors ended with
+  `Iso, J. Yun H. T., I. S. O.? No. Need exact. Wait.`
+- **Several people in one array element**, joined by quote characters: ``Dockery, F. Jean`,`Ellis, Gloria B.` ``
+  (AAMU-0003) and four names in one string on AAMU-0058.
+- **Ambiguous multi-person strings:** `Brooks, Ronald, Burton, Kay` (AAMU-0098), `Spadaro, Anita
+  Zucco, Maria Elisabetta?` (AAMU-0076), `Runyon, Louisa Runyon Shera, [unclear]` (AAMU-0020).
+- **`place` as one semicolon-joined string** while subjects and genre are arrays. The v4 user prompt
+  asked for the semicolon; the v4 system prompt forbids semicolon-joined lists.
+- **`Tokyo--Tokyo`** (AAMU-0102), which is not a FAST heading. It survived because of D-010's place
+  asymmetry: the 9-entry list cannot tell it from the correct `Japan--Tokyo`, and both were kept.
+- **`type`** filled on 10 of 128 items as `Text`, `text`, `memorandum`, `correspondence`,
+  `Newspaper clipping`.
+
+Now (`app/field_validation.py`, applied by `_enforce_post_extraction()` on extraction and rebuild):
+
+- **Names.** `creator`, `contributors` and `correspondents` keep a value only if it is exactly one
+  name. Rejected: quote-comma-quote joins, `?`, reasoning words (`wait`, `need exact`, `hmm`, ...),
+  backticks, semicolons, over 120 characters, and more than one comma unless the extra comma
+  introduces a suffix or life dates (`King, Martin Luther, Jr.`). Rejections are removed, recorded by
+  value and reason in `context.rejected_names` and a `NEEDS NAME REVIEW` note, and surfaced in the
+  run manifest as `needs_name_review`. Quote-joined values carry a `suggested_split`, but are **not
+  split automatically**: the string came from an output that had already broken down.
+- **Place is an array** (schema v3), sender first. The schema item pattern is one `State--City`
+  token; the v4 prompt now asks for an array. Readers go through `place_tokens()`, which accepts the
+  legacy string, so the committed baselines in `out/` still read correctly. CSV export joins with
+  `; `, so the upload sheet's `Location` column is byte-identical for any surviving place.
+- **Place follows the subject rule.** A token absent from `vocab/fast_places.txt` is removed and
+  recorded in the same `Place tokens absent from the approved FAST list:` note that
+  `scripts/expand_vocab_from_run.py` already reads. The original order is kept in
+  `context.place_as_extracted`, so growing the list and rebuilding restores a token in its original
+  position, and the sender stays first.
+- **`type` is never written from model output.** The April 2026 sheet leaves Type blank on every
+  row, and genre carries the document type against AAT.
+- **`metadata_tiers` is refreshed after enforcement.** It used to snapshot values before enforcement,
+  so it kept every rejected subject and genre term (117 mismatches on the batch). It would also have
+  kept the rejected names.
+
+Rebuild re-offers every rejection to the current rules, so the review trail survives repeated
+rebuilds. Rebuilds converge after one migration pass, which recovers place tokens the old code
+dropped. Pinned by `tests/test_field_validation.py`. `scripts/audit_fields.py` counts these defects
+in any output directory without changing it.
+
+**Effect on out_batch** (128 records, current output vs. rebuilt):
+
+| | before | after |
+|---|---|---|
+| Name values that are not one name | 7 in 6 records | 0 (7 in review trail) |
+| Place stored as a string | 112 | 0 |
+| Place tokens not in the approved list | 26 (16 distinct) in 25 records | 0 |
+| Records with a place | 112 | 87 |
+| Model-supplied `type` | 10 | 0 |
+
+**Cost of the stricter place rule:** 25 records have no place until `fast_places.txt` grows past
+its 9 pilot entries. The rejected tokens (`Japan--Tokyo`, `New York--New York`, `China--Peking`,
+...) are the worklist for that, and a rebuild restores them once approved.
+
+
+### D-015 — Places use FAST authorized headings, verified by FAST id; variants map to them
+
+**Decided:** 2026-10-05 by Meng Qu (project lead)
+**Status:** active — supersedes the 9-entry place list of D-014, and the collection's use of
+`District of Columbia--Washington`
+
+The archivist's MAP review sets the standard: Location "is a controlled vocabulary field that uses
+the FAST Subject Heading", to be validated against FAST and consistent across the collection, and
+*missing* locations are named as an error to fix. D-014 held places to `vocab/fast_places.txt`, but
+that list held only the 9 places that happened to occur in the 19-image pilot. Applied to the
+128-item batch it would have emptied the place of 25 records, most of them correct FAST headings
+(`Japan--Tokyo`, `Illinois--Chicago`) that had simply never been reviewed — creating the missing
+locations the review asks us to fix.
+
+Now:
+
+- **`vocab/fast_places.txt` lists FAST authorized headings, each with its FAST id** (26 headings).
+  The list is a verified cache of FAST, not the standard itself.
+- **Verification requires a FAST id.** A FAST suggest result with a matching label but no `idroot`
+  is a see-reference, not a heading: `China--Peking` and `Japan--Kobe` both matched by label alone
+  and were counted as verified by `scripts/expand_vocab_from_run.py` and by
+  `app/vocab_validation.validate_fast_subject`. Both now require the id.
+- **`vocab/fast_place_variants.txt` maps a variant to its authorized heading** — `China--Peking` →
+  `China--Beijing`, `New York--New York` → `New York (State)--New York`, `Tokyo--Tokyo` →
+  `Japan--Tokyo`, `Singapore--Singapore` → `Singapore`. One table, read by `app/places.py`, replaces
+  three hard-coded and slightly different copies of the D.C. mapping. A mapping belongs there only
+  when the place is certain and only the heading's form is wrong; every correction is written to the
+  record's notes. Historical names stay in the transcript; the controlled field takes the current
+  authorized form, as LC and FAST do.
+- **Washington, D.C. is `Washington (D.C.)`** (fst01204505). FAST does not authorize
+  `District of Columbia--Washington`, which the collection had used; the project lead chose to
+  standardize on FAST. Records already published elsewhere under the old form need the same change
+  to stay consistent.
+- **Shape no longer decides validity.** The schema's place pattern required `State--City`, which
+  rejects FAST's own headings for D.C. and city-states and flagged 18 valid records; it now forbids
+  only semicolons and commas. `validation_core` checks the approved list before the shape.
+- **A rebuild replaces its notes.** It used to keep the previous notes whenever the new list came
+  out empty, so 13 records still reported places as rejected after they had been approved.
+
+Result on the 128-item batch, rebuilt offline: 112 records keep a place (as before D-014; 87 under
+it), every place is an approved FAST heading, and no record reports a rejection that no longer holds.
+
+Open: `Pennsylvania--Philadelphia` is the form the archivist prescribed and matches FAST's derived
+headings, but the suggest API did not return its id; confirm it by hand at fast.oclc.org.
