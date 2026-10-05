@@ -285,15 +285,29 @@ def transcribe_with_model(
     text = (resp.choices[0].message.content or "").strip()
     return text[:max_chars], getattr(resp, "usage", None)
 
-def _page_manifest_note(page_labels: List[str]) -> str:
+def _page_manifest_note(page_labels: List[str], first_page: int = 1, total_pages: Optional[int] = None) -> str:
     """Tell the model how many images it is looking at and what to call each one.
 
     Sent as a separate text part rather than folded into the prompt template, so multi-page support
     works with every prompt version without changing their .format() placeholders.
+
+    For an item split across requests, the images are numbered by their place in the WHOLE item.
+    Numbered per request, every request began at [page 1], and the merged transcript of a 7-page
+    item read 1-6 then 1 again (see app/page_markers.py).
     """
-    listing = "\n".join(f"  Image {i}: {label}" for i, label in enumerate(page_labels, start=1))
+    total = total_pages or (first_page - 1 + len(page_labels))
+    listing = "\n".join(f"  Image {first_page + i}: {label}" for i, label in enumerate(page_labels))
+    if len(page_labels) == total:
+        header = f"THIS ITEM CONSISTS OF {total} IMAGES, supplied below in order:\n"
+    else:
+        last = first_page + len(page_labels) - 1
+        header = (
+            f"THIS ITEM CONSISTS OF {total} IMAGES. This request carries images {first_page}-{last}; "
+            "the others are sent in separate requests and merged afterwards. The images below are, "
+            "in order:\n"
+        )
     return (
-        f"THIS ITEM CONSISTS OF {len(page_labels)} IMAGES, supplied below in order:\n"
+        header +
         f"{listing}\n\n"
         "They are pages or sides of ONE archival item and must produce ONE metadata record.\n"
         "- Transcribe every image, in this order, each opening with its own [page N] marker on its\n"
@@ -320,6 +334,8 @@ def extract_metadata(
     reasoning_effort: str = "",
     usage_sink: Optional[List[Any]] = None,
     page_labels: Optional[List[str]] = None,
+    first_page: int = 1,
+    total_pages: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Extract one LOC15 metadata record from one or more images of a single archival item.
 
@@ -343,9 +359,11 @@ def extract_metadata(
         summary_style_examples=summary_style_examples or "No approved summary style examples supplied.",
     )
     content: List[Dict[str, Any]] = [{"type": "text", "text": user_prompt}]
-    if len(images) > 1:
-        labels = page_labels or [f"image {i}" for i in range(1, len(images) + 1)]
-        content.append({"type": "text", "text": _page_manifest_note(labels)})
+    # Also for a lone image that is one page of a longer item: without the manifest it falls back to
+    # the prompt's own "[page 1]", which is how page 7 of AAMU-0028 became a second page 1.
+    if len(images) > 1 or (total_pages or 1) > 1:
+        labels = page_labels or [f"image {i}" for i in range(first_page, first_page + len(images))]
+        content.append({"type": "text", "text": _page_manifest_note(labels, first_page, total_pages)})
     for img_bytes, mime in images:
         content.append(_image_part(img_bytes, mime, detail))
 

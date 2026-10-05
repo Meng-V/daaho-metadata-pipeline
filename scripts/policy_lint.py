@@ -146,9 +146,14 @@ def check(item_id: str, transcript: str) -> list:
     elif worst >= 3:
         add("WARN", "R2", f"possible line-break mimicry: a run of {worst} consecutive short lines")
 
-    # R4 -- page markers.
-    if not re.search(r"^\s*\[page \d+\]\s*$", transcript, re.MULTILINE):
+    # R4 -- page markers, numbered by position in the whole item: 1, 2, 3 ... in order. Items sent in
+    # several requests used to restart at [page 1] in each (D-018); a checker that only asked whether
+    # any marker existed passed all nine of them.
+    numbers = [int(n) for n in re.findall(r"^\s*\[page (\d+)\]\s*$", transcript, re.MULTILINE)]
+    if not numbers:
         add("ERROR", "R4", "no [page N] marker on its own line")
+    elif numbers != list(range(1, len(numbers) + 1)):
+        add("ERROR", "R4", f"page markers are not numbered 1..{len(numbers)} in order: {numbers[:12]}")
 
     # R6/R7 -- the retain-and-annotate contract leaves bracket traces. None at all is a red flag.
     if not non_hw:

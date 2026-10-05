@@ -702,3 +702,33 @@ AAMU-0068), not "Otto"; AAMU-0068 is dated May 11, 1926, not May 10; AAMU-0028's
 misread ("Marie Marshall" as "Miami Itinerary", "Miss Peggy Lou Upham" as "Miami University");
 items over six pages restart page markers at `[page 1]` in their second chunk; AAMU-0087 holds two
 memoranda but is described as one.
+
+### D-018 — Page markers number pages across the whole item, however many requests it takes
+
+**Decided:** 2026-10-05 by Meng Qu (project lead)
+**Status:** active
+
+Items longer than `max_pages_per_call` (6) are sent in several requests and their transcripts
+joined. Each request was told only about its own images — "THIS ITEM CONSISTS OF N IMAGES", with
+`[page N]` meaning the image's position in that request — and a request carrying a single image got
+no manifest at all, falling back to the prompt's own `[page 1]`. So every request numbered from 1:
+AAMU-0028's seven pages read 1–6 then 1, AAMU-0069's thirty-six read 1–6 six times. Nine items in
+the batch were affected. Policy R4 numbers pages by position in the whole item, but
+`scripts/policy_lint.py` only checked that some marker existed, so it passed all nine.
+
+Now:
+
+- **Each request is told its place in the item**: "THIS ITEM CONSISTS OF 7 IMAGES. This request
+  carries images 7-7", with images numbered from `first_page`. A lone image that is one page of a
+  longer item gets the manifest too. A whole item sent in one request sees the same text as before.
+- **A deterministic repair runs after merging** (`app/page_markers.py`), and on rebuild for older
+  records: a marker that does not increase can only be a restart, so numbering continues from the
+  last page reached. The repair is kept only if the result is exactly `1..page_count`; otherwise the
+  transcript is left alone and flagged `NEEDS PAGE REVIEW`.
+- **The repair is recorded in `context.page_markers_renumbered`**, which a rebuild carries forward,
+  rather than only in the regenerated notes, where it would vanish on the next rebuild.
+- **`policy_lint` R4 now requires markers numbered 1..n in order.** It flags the nine items in the
+  pre-fix output and none after; the 18 / 41 error counts are unchanged.
+
+On the batch, rebuilt offline: exactly those nine records change, and only in their page markers —
+the transcripts are otherwise identical — and a second rebuild changes nothing.

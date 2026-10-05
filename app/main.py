@@ -28,6 +28,7 @@ from .cost import (
 )
 from .derivations import apply_derivations, derive_normalized_title
 from .evidence_qc import run_evidence_qc
+from .page_markers import renumber_restarted_pages
 from .places import canonical_place
 from .field_validation import (
     drop_type,
@@ -707,6 +708,13 @@ def rebuild_existing_outputs(
         # still present -- it could not restore what the model originally proposed. D-010 records
         # every rejection by name in policy_notes precisely so nothing is lost; this reads them
         # back and lets the current vocabulary judge them again.
+        # Repair transcripts written before requests were told their place in the item. The record of
+        # the repair goes in context, which a rebuild carries forward; notes are regenerated each time.
+        md["transcript"], page_repair, page_note = renumber_restarted_pages(
+            md.get("transcript"), len(context.get("pages") or []) or 1
+        )
+        if page_repair:
+            context["page_markers_renumbered"] = page_repair
         _reoffer_places_in_order(md, context)
         restored = _reoffer_rejected_terms(md, context.get("policy_notes") or [])
         reoffer_rejected_names(md, context.get("rejected_names"))
@@ -758,7 +766,7 @@ def rebuild_existing_outputs(
         enforcement_notes, enforcement_context = _enforce_post_extraction(
             md, approved_places, approved_subjects, approved_genre
         )
-        policy_notes = policy_notes + enforcement_notes
+        policy_notes = policy_notes + enforcement_notes + ([page_note] if page_note else [])
         _refresh_tier_snapshots(md, metadata_tiers)
         _apply_context_updates(context, enforcement_context)
 
@@ -952,6 +960,8 @@ def process_item(
                 reasoning_effort=reasoning_effort,
                 usage_sink=usage_sink,
                 page_labels=chunk_labels,
+                first_page=indexes[0] + 1,
+                total_pages=len(present),
             ))
     except ExtractionFailed as exc:
         # Bill what was actually spent, then write NO output. The item stays unprocessed so a
@@ -994,6 +1004,10 @@ def process_item(
             ))
 
     md, merge_notes = _merge_chunk_metadata(chunk_results)
+    # Safety net behind the per-request page numbering: repair any restart the model still produced.
+    md["transcript"], page_repair, page_note = renumber_restarted_pages(md.get("transcript"), len(present))
+    if page_note:
+        merge_notes = merge_notes + [page_note]
 
     review_notes: List[str] = []
     review_data: Optional[Dict[str, Any]] = None
@@ -1053,6 +1067,8 @@ def process_item(
     }
     if missing_pages:
         context["missing_pages"] = missing_pages
+    if page_repair:
+        context["page_markers_renumbered"] = page_repair
     _apply_context_updates(context, enforcement_context)
     if ledger:
         context["cost_usd"] = ledger.total_for(item_id)
