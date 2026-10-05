@@ -796,6 +796,10 @@ def rebuild_existing_outputs(
         validation_error = _validate(md)
         if validation_error:
             envelope["context"]["validation_error"] = validation_error
+        else:
+            # Like the notes above, the flag describes this rebuild, not the last one. Kept, it went on
+            # calling AAMU-0003 and AAMU-0069 invalid after the cap that made them so was removed.
+            envelope["context"].pop("validation_error", None)
         json_file.write_text(json.dumps(envelope, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Rebuilt {json_file.name}")
 

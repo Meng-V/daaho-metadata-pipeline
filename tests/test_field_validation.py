@@ -235,3 +235,24 @@ class NameListsAreNotCapped(unittest.TestCase):
         problems = [e for e in Draft7Validator(__import__("app.schema", fromlist=["LOC15_SCHEMA"]).LOC15_SCHEMA).iter_errors(md)
                     if list(e.path)[:1] == ["contributors"]]
         self.assertEqual(problems, [])
+
+
+class RebuildClearsStaleValidationError(unittest.TestCase):
+    def test_a_fixed_record_is_no_longer_flagged(self):
+        from app.main import _validate
+        from app.schema import LOC15_SCHEMA
+        envelope = _envelope(contributors=[f"Person{i}, Test" for i in range(22)])
+        md = envelope["metadata"]
+        for key in LOC15_SCHEMA["required"]:  # a complete, valid record: only the stale flag is wrong
+            if key not in md:
+                spec = LOC15_SCHEMA["properties"][key]
+                md[key] = {k: None for k in spec["properties"]} if key == "field_confidence" else None
+        self.assertEqual(_validate(md), "", "fixture must be valid, or the test proves nothing")
+        envelope["context"]["validation_error"] = "contributors: [...] is too long"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "X-0001.loc15.json"
+            path.write_text(json.dumps(envelope), encoding="utf-8")
+            _rebuild(tmp)
+            rebuilt = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(len(rebuilt["metadata"]["contributors"]), 22)
+        self.assertNotIn("validation_error", rebuilt["context"])
